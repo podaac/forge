@@ -1,0 +1,9 @@
+.*
+!/.gitignore
+/target
+/build
+/bin
+# ignore intelliJ project iml file
+*.iml
+.idea
+packaging

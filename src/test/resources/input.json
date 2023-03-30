@@ -1,0 +1,110 @@
+{
+  "input": {
+    "granules": [
+      {
+        "granuleId": "L2_HR_LAKE_SP_product_0001-of-0050",
+        "files": [
+          {
+            "bucket": "podaac-dev-cumulus-test-input",
+            "key": "S6A_P4_2__LR_RED__NT/S6A_P4_2__LR_RED__NT_002_074_20210411T222753_20210411T232406_TST.nc",
+            "fileName": "S6A_P4_2__LR_RED__NT_002_074_20210411T222753_20210411T232406_TST.nc",
+            "type": "data",
+            "size": 10523048
+          },
+          {
+            "bucket": "podaac-dev-cumulus-test-input",
+            "key": "S6A_P4_2__LR_RED__NT/S6A_P4_2__LR_RED__NT_002_074_20210411T222753_20210411T232406_TST.xfdumanifest.xml",
+            "fileName": "S6A_P4_2__LR_RED__NT_002_074_20210411T222753_20210411T232406_TST.xfdumanifest.xml",
+            "type": "metadata",
+            "size": 3535
+          }
+        ]
+      }
+    ]
+  },
+  "config": {
+    "buckets": {
+      "newBucket": {
+        "type": "public",
+        "name": "podaac-dev-cumulus-newBucket"
+      },
+      "protected": {
+        "type": "protected",
+        "name": "podaac-dev-cumulus-protected"
+      },
+      "internal": {
+        "type": "internal",
+        "name": "podaac-dev-cumulus-internal"
+      },
+      "private": {
+        "type": "private",
+        "name": "podaac-dev-cumulus-private"
+      },
+      "public": {
+        "type": "public",
+        "name": "podaac-dev-cumulus-public"
+      }
+    },
+    "downloadBucket": "podaac-dev-cumulus-internal",
+    "stack": "podaac-dev-cumulus",
+    "skipChecksumVerification": true,
+    "execution_name": "1234-5678-90",
+    "collection": {
+      "files": [
+        {
+          "regex": ".*.h5$",
+          "sampleFileName": "L2_HR_LAKE_SP_product_0001-of-0050.h5",
+          "type": "data",
+          "bucket": "protected"
+        },
+        {
+          "regex": ".*.h5.md5$",
+          "sampleFileName": "L2_HR_LAKE_SP_product_0001-of-0050.h5.md5",
+          "type": "metadata",
+          "bucket": "protected"
+        },
+        {
+          "regex": ".*.iso.xml$",
+          "sampleFileName": "L2_HR_LAKE_SP_product_0001-of-0019.iso.xml",
+          "type": "metadata",
+          "bucket": "protected"
+        },
+        {
+          "regex": ".*.iso.xml.md5$",
+          "sampleFileName": "L2_HR_LAKE_SP_product_0001-of-0019.iso.xml.md5",
+          "type": "metadata",
+          "bucket": "protected"
+        },
+        {
+          "regex": ".*.cmr.json$",
+          "sampleFileName": "L2_HR_LAKE_SP_product_0001-of-0019.cmr.json",
+          "type": "metadata",
+          "bucket": "public"
+        }
+      ],
+      "name": "L2_HR_LAKE_SP",
+      "granuleIdExtraction": "^(.*)((\\.cmr\\.json)|(\\.h5)|(\\.h5\\.mp))$",
+      "granuleId": "^.*$",
+      "provider_path": "L2_HR_LAKE_SP/",
+      "version": "1",
+      "updatedAt": 1552434051881,
+      "duplicateHandling": "replace",
+      "sampleFileName": "L2_HR_LAKE_SP_product_0001-of-0050.h5",
+      "createdAt": 1552434051881,
+      "meta": {
+        "required-files": [
+          ".*.h5$",
+          ".*.iso.xml$"
+        ]
+      }
+    },
+    "provider": {
+      "protocol": "s3",
+      "globalConnectionLimit": 1000,
+      "host": "podaac-dev-cumulus-test-input",
+      "updatedAt": 1552434022180,
+      "id": "podaac-test-s3",
+      "createdAt": 1552434022180
+    }
+  }
+}

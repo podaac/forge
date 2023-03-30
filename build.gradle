@@ -1,0 +1,316 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        //Check for the latest version here: http://plugins.gradle.org/plugin/com.jfrog.artifactory
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4+"
+        classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'jacoco'
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: "com.jfrog.artifactory"
+    apply plugin: "com.github.johnrengelman.shadow"
+}
+
+repositories {
+    maven { url 'https://repo.osgeo.org/repository/release/' }
+    maven { url 'https://repo.clojars.org' }
+    maven { url "https://jitpack.io" }
+    mavenCentral()
+}
+
+group = 'gov.nasa.podaac'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    developmentOnly
+    antJUnit
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+}
+
+dependencies {
+    compile group: 'com.vividsolutions', name: 'jts', version: '1.13'
+    compile group: 'gov.nasa.earthdata', name: 'cumulus-message-adapter', version: '1.3.9'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.393'
+    compile group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.1'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-stepfunctions', version: '1.12.363'
+
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
+
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    compile group: 'org.json', name: 'json', version: '20220924'
+
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    compile group: 'commons-io', name: 'commons-io', version: '2.8.0'
+    compile group: 'edu.ucar', name: 'cdm', version: '4.6.20'
+
+    compile group: 'org.geotools', name: 'gt-shapefile', version: '28.0'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+
+    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.17.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+
+    testImplementation 'org.openjdk.jmh:jmh-core:1.26'
+    testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.26'
+
+    antJUnit 'org.apache.ant:ant-junit:1.10.10'
+    compile group: "com.github.everit-org.json-schema", name: "org.everit.json.schema", version: "1.14.1"
+    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
+
+    compile group: 'com.beust', name: 'jcommander', version: '1.82'
+    compile group: 'org.jdom', name: 'jdom2', version: '2.0.6.1'
+    
+}
+
+compileJava.dependsOn(processResources)
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.enabled true
+        html.enabled true
+        csv.enabled true
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+//
+// Version Bump related
+// This versioning models 'semantic versioning.'  Ideas taken from this code:
+// https://github.com/python-poetry/semver/blob/master/semver/version.py
+//
+def getVersionName = { getVersionProps()['version'] }
+
+def getVersionProps() {
+    def versionPropsFile = file('gradle.properties')
+    if (!versionPropsFile.exists()) {
+        versionPropsFile.createNewFile()
+    }
+    def versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+    return versionProps
+}
+
+def isPrerelease() {
+    if (getVersionProps()['version'].findAll(/\d+/).size() == 4) {
+        return true
+    }
+    return false
+}
+
+def getPrereleasePrefix(){
+    try{
+        return getVersionProps()['version'].split('-')[1].toString().split('\\.')[0]
+    }
+    catch(ArrayIndexOutOfBoundsException exception){
+        return 'alpha'
+    }
+}
+
+def getVersionNamePrerelease = { (getVersionName() =~ /\d+/)[3].toInteger() }
+def getVersionNamePatch = { (getVersionName() =~ /\d+/)[2].toInteger() }
+def getVersionNameMinor = { (getVersionName() =~ /\d+/)[1].toInteger() }
+def getVersionNameMajor = { (getVersionName() =~ /\d+/)[0].toInteger() }
+
+private void save(major, minor, patch, prerelease) {
+    if (prerelease != null) {
+        def prerelease_prefix = getPrereleasePrefix()
+        save("${major}.${minor}.${patch}-${prerelease_prefix}.${prerelease}".toString())
+    } else {
+        save("${major}.${minor}.${patch}".toString())
+    }
+}
+
+private void save(versionName) {
+    def versionProps = getVersionProps()
+    versionProps['version'] = versionName
+    versionProps.store(file('gradle.properties').newWriter(), null)
+}
+
+task mergeJUnitReports {
+    ext {
+        resultsDir = file("$buildDir/test-results/test")
+        targetDir = file("$buildDir/test-results/merged")
+    }
+
+    doLast {
+        ant.taskdef(name: 'junitreport',
+                    classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+                    classpath: configurations.antJUnit.asPath)
+
+        ant.junitreport(todir: resultsDir) {
+            fileset(dir: resultsDir, includes: 'TEST-*.xml')
+            report(todir: targetDir, format: 'frames')
+        }
+    }
+}
+
+task getCurrentVersion() {
+    return getVersionName
+}
+
+task bumperInit() {
+    group = 'bumper'
+    doLast {
+        def versionName = project.hasProperty('version') ? version : ""
+
+        if (versionName == "unspecified" || versionName == "") {
+            versionName = "0.0.0-alpha.0"
+        }
+        save(versionName)
+    }
+}
+
+task bumperVersionPrerelease() {
+    group = 'bumper'
+    doLast {
+        if (isPrerelease()) {
+            save(getVersionNameMajor(), getVersionNameMinor(), getVersionNamePatch(), getVersionNamePrerelease() + 1)
+        } else {
+            save(getVersionNameMajor(), getVersionNameMinor(), getVersionNamePatch() + 1, 0)
+        }
+    }
+}
+
+task bumperVersionPatch() {
+    group = 'bumper'
+    doLast {
+        if (isPrerelease()) {
+            save(getVersionNameMajor(), getVersionNameMinor(), getVersionNamePatch(), null)
+        } else {
+            save(getVersionNameMajor(), getVersionNameMinor(), getVersionNamePatch() + 1, null)
+        }
+    }
+}
+
+task bumperVersionPreminor() {
+    group = 'bumper'
+    doLast {
+        if (isPrerelease() && getVersionNamePatch() == 0) {
+            save(getVersionNameMajor(), getVersionNameMinor(), 0, 0)
+        } else {
+            save(getVersionNameMajor(), getVersionNameMinor() + 1, 0, 0)
+        }
+    }
+}
+task bumperVersionMinor() {
+    group = 'bumper'
+    doLast {
+        if (isPrerelease() && getVersionNamePatch() == 0) {
+            save(getVersionNameMajor(), getVersionNameMinor(), 0, null)
+        } else {
+            save(getVersionNameMajor(), getVersionNameMinor() + 1, 0, null)
+        }
+    }
+}
+
+task buildZip(type: Zip) {
+    group = 'builder'
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtime
+    }
+    archiveName "forge-${getVersionName()}.zip"
+}
+
+task getServiceName() {
+    doLast{
+        print("forge")
+    }
+}
+
+task buildArtifact(type: Zip) {
+    group = 'builder'
+    from("$buildDir/distributions") {
+        include "*.*"
+        include "fargate/**"
+    }
+    destinationDirectory=file("$projectDir/dist")
+    archiveFileName="forge-${getVersionName()}.zip"
+}
+
+task cleanDist(type: Delete) {
+  delete 'dist'
+  followSymlinks = true
+}
+
+task copyTFFiles(type: Copy) {
+    group = 'builder'
+    from("$projectDir/terraform") {
+        include "*.tf"
+        include "fargate/**"
+    }
+    into("$buildDir/distributions")
+}
+
+task buildLambda(type: Zip) {
+    group = 'builder'
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtime
+    }
+    archiveName "forge-lambda.zip"
+}
+
+task currentVersion() {
+    doLast {
+        print "${getVersionName()}"
+    }
+}
+
+//  ./gradlew setCurrentVersion -Pargs=3.2.0
+task setCurrentVersion(){
+    doLast{
+        if (project.hasProperty("args")) {
+            println "set version to ["+project.getProperty("args")+"]"
+            save(project.getProperty("args"))
+        }
+    }
+}
+
+// Output to build/libs/shadow.jar
+shadowJar {
+   archiveBaseName.set('shadow')
+   archiveClassifier.set('')
+   archiveVersion.set('')
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'ActivityHandler'
+    }
+}
+
+buildZip.dependsOn build
+buildArtifact.dependsOn buildLambda, copyTFFiles, cleanDist

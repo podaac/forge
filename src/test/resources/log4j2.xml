@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+     <Console name="STDOUT" target="SYSTEM_OUT">
+       <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+     </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="gov.nasa.podaac.forge" level="DEBUG" />
+        <Logger name="gov.nasa.podaac.common.api.tool" level="DEBUG" />
+        <Root level="DEBUG">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
+</Configuration>
