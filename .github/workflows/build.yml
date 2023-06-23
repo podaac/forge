@@ -55,7 +55,7 @@ jobs:
         # At pre-alpha, append git-commit to version, set it into gradle property
         # read the version out and set to build_service_version
         run: |
-          new_version="${{ env.the_version }}+$(git rev-parse --short ${GITHUB_SHA})"
+          new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
           echo "software_version=" >> $GITHUB_ENV
 
