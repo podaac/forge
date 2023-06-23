@@ -70,11 +70,12 @@ jobs:
       - name: Bump rc version
         # If triggered by push to a release branch
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
-        env:
+#        env:
           # True if the version already has a 'rc' pre-release identifier
-          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
+#          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
-          if [ "$BUMP_RC" = true ]; then
+
+          if [ ${{ env.the_version }} == *"rc"* ]; then
             ./gradlew bumperVersionPrerelease
             ./gradlew currentVersion -q > .temp_version.out
             cat .temp_version.out
