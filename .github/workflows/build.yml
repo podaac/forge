@@ -39,7 +39,7 @@ jobs:
           echo "the_service=${{ github.event.repository.name }}" >> $GITHUB_ENV
           echo "the_env=$(printenv)" >> $GITHUB_ENV
           echo "${{ github.event.repository.name }}"
-          ./gradlew currentVersion -q .temp_version.out
+          ./gradlew currentVersion -q > .temp_version.out
           echo "--------"
           cat .temp_version.out
           echo "--------"
