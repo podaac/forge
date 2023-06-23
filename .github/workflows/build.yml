@@ -63,8 +63,7 @@ jobs:
         # If triggered by push to the develop branch
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
-          poetry version prerelease
-          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
           echo "venue=sit" >> $GITHUB_ENV
 
       # Release Candidate Logic
@@ -73,14 +72,18 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
         env:
           # True if the version already has a 'rc' pre-release identifier
-          BUMP_RC: ${{ contains(steps.get-version.outputs.current_version, 'rc') }}
+          BUMP_RC: ${{ contains(${{ env.the_version }}, 'rc') }}
         run: |
           if [ "$BUMP_RC" = true ]; then
-            poetry version prerelease
+            ./gradlew bumperVersionPrerelease
+            ./gradlew currentVersion -q > .temp_version.out
+            cat .temp_version.out
+            the_version=${{ env.the_version }}
+
           else
-            poetry version ${GITHUB_REF#refs/heads/release/}-rc.1
+            echo "the_version={{ env.the_version }}-rc.1"
           fi
-          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          echo "software_version=$the_version" >> $GITHUB_ENV
           echo "venue=uat" >> $GITHUB_ENV
 
       # Release Logic
@@ -88,12 +91,12 @@ jobs:
         # If triggered by push to the main branch
         if: ${{ startsWith(github.ref, 'refs/heads/main') }}
         env:
-          CURRENT_VERSION: ${{ steps.get-version.outputs.current_version }}
+          CURRENT_VERSION: ${{ env.the_version }}
         # Remove -rc.* from end of version string
         # The ${string%%substring} syntax below deletes the longest match of $substring from back of $string.
         run: |
-          poetry version ${CURRENT_VERSION%%-rc.*}
-          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          software_version=${CURRENT_VERSION%%-rc.*}
+          echo "software_version=$software_version" >> $GITHUB_ENV
           echo "venue=ops" >> $GITHUB_ENV
 
       #########################################################################
