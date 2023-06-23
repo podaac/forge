@@ -39,6 +39,7 @@ jobs:
           ls -al
           SERVICE_NAME=$(./gradlew --console plain -q :getServiceName)
           echo "SERVICE NAME: $SERVICE_NAME"
+          echo "REPO NAME: ${{ github.event.repository.name }}"
 #        run: echo "./gradlew --console plain -q :getServiceName" >> $GITHUB_ENV
 
       # # These steps will determine the tags based on the branch name and other actions performed in github
