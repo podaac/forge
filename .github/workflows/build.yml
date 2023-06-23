@@ -40,7 +40,8 @@ jobs:
           echo "the_env=$(printenv)" >> $GITHUB_ENV
           echo "${{ github.event.repository.name }}"
           echo "the_version=$(./gradlew currentVersion -q | awk '{print $2}')" >> $GITHUB_ENV
-          ./gradlew currentVersion -q
+          temp_version=$(./gradlew currentVersion -q)
+          echo "TEMP VERSION: $temp_version"
 
       # These steps will determine the tags based on the branch name and other actions performed in github
       # Pre-Alpha Logic
