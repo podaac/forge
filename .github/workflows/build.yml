@@ -36,62 +36,69 @@ jobs:
       - name: Get version
         id: get-version
         run: |
-          ls -al
-          SERVICE_NAME=$(./gradlew --console plain -q :getServiceName)
-          echo "SERVICE NAME: $SERVICE_NAME"
-          echo "REPO NAME: ${{ github.event.repository.name }}"
-#        run: echo "./gradlew --console plain -q :getServiceName" >> $GITHUB_ENV
+          echo "the_service=${{ github.event.repository.name }}" >> $GITHUB_ENV
+          echo "the_env=$(printenv)" >> $GITHUB_ENV
 
-      # # These steps will determine the tags based on the branch name and other actions performed in github
-      # # Pre-Alpha Logic
-      # - name: Bump pre-alpha version
-      #   # If triggered by push to a feature branch
-      #   if: |
-      #     ${{ startsWith(github.ref, 'refs/heads/issue') }}      ||
-      #     ${{ startsWith(github.ref, 'refs/heads/dependabot/') }} ||
-      #     ${{ startsWith(github.ref, 'refs/heads/feature/') }}
-      #   run: |
-      #     new_ver="${{ steps.get-version.outputs.current_version }}+$(git rev-parse --short ${GITHUB_SHA})"
-      #     poetry version $new_ver
-      #     echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+      # These steps will determine the tags based on the branch name and other actions performed in github
+      # Pre-Alpha Logic
+      - name: Bump pre-alpha version
+        # If triggered by push to a feature branch
+        if: |
+          ${{ startsWith(github.ref, 'refs/heads/issue') }}      ||
+          ${{ startsWith(github.ref, 'refs/heads/dependabot/') }} ||
+          ${{ startsWith(github.ref, 'refs/heads/feature/') }}
+        run: |
+          new_ver="${{ steps.get-version.outputs.current_version }}+$(git rev-parse --short ${GITHUB_SHA})"
+          poetry version $new_ver
+          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
 
-      # # Alpha Logic
-      # - name: Bump alpha version
-      #   # If triggered by push to the develop branch
-      #   if: ${{ github.ref == 'refs/heads/develop' }}
-      #   run: |
-      #     poetry version prerelease
-      #     echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
-      #     echo "venue=sit" >> $GITHUB_ENV
+      # Alpha Logic
+      - name: Bump alpha version
+        # If triggered by push to the develop branch
+        if: ${{ github.ref == 'refs/heads/develop' }}
+        run: |
+          poetry version prerelease
+          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          echo "venue=sit" >> $GITHUB_ENV
 
-      # # Release Candidate Logic
-      # - name: Bump rc version
-      #   # If triggered by push to a release branch
-      #   if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
-      #   env:
-      #     # True if the version already has a 'rc' pre-release identifier
-      #     BUMP_RC: ${{ contains(steps.get-version.outputs.current_version, 'rc') }}
-      #   run: |
-      #     if [ "$BUMP_RC" = true ]; then
-      #       poetry version prerelease
-      #     else
-      #       poetry version ${GITHUB_REF#refs/heads/release/}-rc.1
-      #     fi
-      #     echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
-      #     echo "venue=uat" >> $GITHUB_ENV
+      # Release Candidate Logic
+      - name: Bump rc version
+        # If triggered by push to a release branch
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
+        env:
+          # True if the version already has a 'rc' pre-release identifier
+          BUMP_RC: ${{ contains(steps.get-version.outputs.current_version, 'rc') }}
+        run: |
+          if [ "$BUMP_RC" = true ]; then
+            poetry version prerelease
+          else
+            poetry version ${GITHUB_REF#refs/heads/release/}-rc.1
+          fi
+          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          echo "venue=uat" >> $GITHUB_ENV
 
-      # # Release Logic
-      # - name: Release version
-      #   # If triggered by push to the main branch
-      #   if: ${{ startsWith(github.ref, 'refs/heads/main') }}
-      #   env:
-      #     CURRENT_VERSION: ${{ steps.get-version.outputs.current_version }}
-      #   # Remove -rc.* from end of version string
-      #   # The ${string%%substring} syntax below deletes the longest match of $substring from back of $string.
-      #   run: |
-      #     poetry version ${CURRENT_VERSION%%-rc.*}
-      #     echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
-      #     echo "venue=ops" >> $GITHUB_ENV
+      # Release Logic
+      - name: Release version
+        # If triggered by push to the main branch
+        if: ${{ startsWith(github.ref, 'refs/heads/main') }}
+        env:
+          CURRENT_VERSION: ${{ steps.get-version.outputs.current_version }}
+        # Remove -rc.* from end of version string
+        # The ${string%%substring} syntax below deletes the longest match of $substring from back of $string.
+        run: |
+          poetry version ${CURRENT_VERSION%%-rc.*}
+          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          echo "venue=ops" >> $GITHUB_ENV
+
+      #########################################################################
+      # Versioning Summary
+      #########################################################################
+      - name: Versioning Summary
+        run: |
+          echo "the_service: ${the_service}"
+          echo "the_env: ${the_env}"
+          echo "software_version: ${software_version}"
+
 
       # #########################################################################
       # # Build
