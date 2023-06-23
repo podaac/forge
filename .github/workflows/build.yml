@@ -81,7 +81,7 @@ jobs:
             cat .temp_version.out
             the_version=${{ env.the_version }}
           else
-            echo "the_version={{ env.the_version }}-rc.1"
+            echo "the_version=${{ env.the_version }}-rc.1"
           fi
           echo "software_version=$the_version" >> $GITHUB_ENV
           echo "venue=uat" >> $GITHUB_ENV
