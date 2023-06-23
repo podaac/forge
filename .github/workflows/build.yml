@@ -54,7 +54,7 @@ jobs:
         run: |
           new_ver="${{ env.the_version }}+$(git rev-parse --short ${GITHUB_SHA})"
           echo "new_version=${new_version}" >> $GITHUB_ENV
-          echo "software_version=$(gradle -version)" >> $GITHUB_ENV
+          echo "software_version=$(gradle -version |grep Gradle)" >> $GITHUB_ENV
 
       # Alpha Logic
       - name: Bump alpha version
