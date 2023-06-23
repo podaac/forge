@@ -57,7 +57,6 @@ jobs:
         run: |
           new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
-          echo "software_version=" >> $GITHUB_ENV
 
       # Alpha Logic
       - name: Bump alpha version
