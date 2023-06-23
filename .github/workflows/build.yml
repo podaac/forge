@@ -37,7 +37,7 @@ jobs:
         id: get-version
         run: |
           ls -al
-          ./gradlew --console plain -q :getServiceName
+          echo "./gradlew --console plain -q :getServiceName" >> $GITHUB_ENV
 #        run: echo "./gradlew --console plain -q :getServiceName" >> $GITHUB_ENV
 
       # # These steps will determine the tags based on the branch name and other actions performed in github
