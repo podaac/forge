@@ -38,6 +38,7 @@ jobs:
         run: |
           echo "the_service=${{ github.event.repository.name }}" >> $GITHUB_ENV
           echo "the_env=$(printenv)" >> $GITHUB_ENV
+          echo "${{ github.event.repository.name }}"
 
       # These steps will determine the tags based on the branch name and other actions performed in github
       # Pre-Alpha Logic
@@ -47,10 +48,13 @@ jobs:
           ${{ startsWith(github.ref, 'refs/heads/issue') }}      ||
           ${{ startsWith(github.ref, 'refs/heads/dependabot/') }} ||
           ${{ startsWith(github.ref, 'refs/heads/feature/') }}
+        # At pre-alpha, append git-commit to version, set it into gradle property
+        # read the version out and set to build_service_version
         run: |
-          new_ver="${{ steps.get-version.outputs.current_version }}+$(git rev-parse --short ${GITHUB_SHA})"
-          poetry version $new_ver
-          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
+          new_ver="$(./gradlew currentVersion -q)+$(git rev-parse --short ${GITHUB_SHA})"
+          echo "the_version=$(./gradlew currentVersion -q)" >> $GITHUB_ENV
+          echo "new_version=${new_version}" >> $GITHUB_ENV
+#          echo "software_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
 
       # Alpha Logic
       - name: Bump alpha version
@@ -98,6 +102,7 @@ jobs:
           echo "the_service: ${the_service}"
           echo "the_env: ${the_env}"
           echo "software_version: ${software_version}"
+          env
 
 
       # #########################################################################
