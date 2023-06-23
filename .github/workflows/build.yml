@@ -100,6 +100,7 @@ jobs:
       - name: Versioning Summary
         run: |
           echo "the_service: ${{ env.the_service }}"
+          echo "the_version: ${{ env.the_version }}"
           echo "the_env: ${{ env.the_env }}"
           echo "software_version: ${{ env.software_version }}"
           env
