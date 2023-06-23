@@ -79,11 +79,12 @@ jobs:
             ./gradlew bumperVersionPrerelease
             ./gradlew currentVersion -q > .temp_version.out
             cat .temp_version.out
-            the_version=${{ env.the_version }}
+            echo "the_version=${{ env.the_version }}" >> $GITHUB_ENV
+            echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
           else
-            echo "the_version=${{ env.the_version }}-rc.1"
+            echo "the_version=${{ env.the_version }}-rc.1" >> $GITHUB_ENV
+            echo "software_version=${{ env.the_version }}-rc.1" >> $GITHUB_ENV
           fi
-          echo "software_version=$the_version" >> $GITHUB_ENV
           echo "venue=uat" >> $GITHUB_ENV
 
       # Release Logic
@@ -109,7 +110,8 @@ jobs:
           echo "the_env: ${{ env.the_env }}"
           echo "software_version: ${{ env.software_version }}"
           echo "GITHUB REF: ${{ github.ref }}"
-          env
+          echo "VENUE: ${{ env.venue }}"
+#          env
 
 
       # #########################################################################
