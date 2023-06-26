@@ -32,7 +32,7 @@ jobs:
       #########################################################################
       # Versioning (featuring weird gradle output work-arounds)
       #########################################################################
-      # Retrieve version information for documenting later
+      # Retrieve version information for use in the other versioning steps
       - name: Get version
         id: get-version
         run: |
@@ -45,7 +45,7 @@ jobs:
           echo "the_version=$the_version" >> $GITHUB_ENV
 
       # These steps will determine the tags based on the branch name and other actions performed in github
-      # Pre-Alpha Logic
+      # Pre-Alpha Logic - Use the project version number and add the short hash to it
       - name: Bump pre-alpha version
         # If triggered by push to a feature branch
         if: |
@@ -58,7 +58,7 @@ jobs:
           new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
 
-      # Alpha Logic
+      # Alpha Logic - Use the project version number and 
       - name: Bump alpha version
         # If triggered by push to the develop branch
         if: ${{ github.ref == 'refs/heads/develop' }}
@@ -70,12 +70,13 @@ jobs:
       - name: Bump rc version
         # If triggered by push to a release branch
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
-#        env:
+        env:
+          VERSION: ${{ env.the_version }}
           # True if the version already has a 'rc' pre-release identifier
 #          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
 
-          if [ ${{ env.the_version }} == *"rc"* ]; then
+          if [ ${VERSION} == *"rc"* ]; then
             ./gradlew bumperVersionPrerelease
             ./gradlew currentVersion -q > .temp_version.out
             cat .temp_version.out
