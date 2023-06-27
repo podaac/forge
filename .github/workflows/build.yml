@@ -68,6 +68,7 @@ jobs:
         # If triggered by push to the develop branch
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
+          echo "The initial version is ${VERSION}"
           if [[ ${VERSION} == *"-alpha"* ]]; then
             alpha_number=$(echo "${VERSION}" | sed -e s/*-alpha.//g)
             alpha_number=$alpha_number+1
