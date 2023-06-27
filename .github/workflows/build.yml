@@ -24,8 +24,7 @@ jobs:
       # Environment Setup
       #########################################################################
       # NOTE: This step is platform-specific
-      # Checks out this repository and sets up the build/test environment with 
-      # gradle
+      # Checks out this repository and sets up the build/test environment with gradle
       - name: Checkout project sources
         uses: actions/checkout@v2
       - name: Setup Gradle
