@@ -68,24 +68,17 @@ jobs:
         # If triggered by push to the develop branch
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
-          echo "The initial version is ${VERSION}"
           if [[ ${VERSION} == *"-alpha"* ]]; then
             alpha_number=$(echo "${VERSION}" | sed -e s/^.*-alpha.//g)
             alpha_number=$((alpha_number+1))
-
-            echo "Alpha Number is now $alpha_number"
-
             the_version=$(echo "$the_version" | sed -e s/-alpha.*//g)
-
             the_version="${the_version}-alpha.$alpha_number"
-
             echo "software_version=${the_version}" >> $GITHUB_ENV
-            echo "venue=sit" >> $GITHUB_ENV
+            echo "the_version=${the_version}" >> $GITHUB_ENV
           else
             the_version="${{ env.the_version }}-alpha.1"
           fi
-          echo "The new version number will be $the_version"
-
+          echo "venue=sit" >> $GITHUB_ENV
 
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
@@ -97,13 +90,15 @@ jobs:
           # True if the version already has a 'rc' pre-release identifier
 #          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
-          if [ ${VERSION} == *"rc"* ]; then
-            echo "the_version=${{ env.the_version }}" >> $GITHUB_ENV
-            echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
+          if [[ ${VERSION} == *"-rc"* ]]; then
+            rc_number=$(echo "${VERSION}" | sed -e s/^.*-rc.//g)
+            rc_number=$((alpha_number+1))
+            the_version=$(echo "$the_version" | sed -e s/-rc.*//g)
+            the_version="${the_version}-rc.$rc_number"
+            echo "software_version=${the_version}" >> $GITHUB_ENV
+            echo "the_version=${the_version}" >> $GITHUB_ENV
           else
-            the_version= echo "$the_version" | sed -e s/-alpha*//g
-            echo "the_version=${the_version}-rc.1" >> $GITHUB_ENV
-            echo "software_version=${the_version}-rc.1" >> $GITHUB_ENV
+            the_version="${{ env.the_version }}-rc.1"
           fi
           echo "venue=uat" >> $GITHUB_ENV
 
@@ -122,7 +117,13 @@ jobs:
 
       # Update the version number in the application package itself
       - name: Update version number in the application package
-        run: echo "This is where I need to "
+        run: |
+          ./gradlew setCurrentVersion -Pargs=${{ env.the_version }}
+          ./gradlew bumperVersionPreminor
+          ./gradlew currentVersion -q > .temp_version.out
+          new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
+          rm .temp_version.out
+          echo "New Application Version: $new_version"
 
 
       #########################################################################
@@ -136,8 +137,6 @@ jobs:
           echo "software_version: ${{ env.software_version }}"
           echo "GITHUB REF: ${{ github.ref }}"
           echo "VENUE: ${{ env.venue }}"
-#          env
-
 
       # #########################################################################
       # # Build
