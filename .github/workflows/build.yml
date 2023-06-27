@@ -193,8 +193,7 @@ jobs:
 #          ./gradlew --scan buildArtifact
 
 
-      #     poetry run pytest --junitxml=build/reports/pytest.xml --cov=podaac/ --cov-report=xml:build/reports/coverage.xml -m "not aws and not 
-integration" tests/
+      #     poetry run pytest --junitxml=build/reports/pytest.xml --cov=podaac/ --cov-report=xml:build/reports/coverage.xml -m "not aws and not integration" tests/
 
       # - name: SonarCloud Scan
       #   uses: sonarsource/sonarcloud-github-action@master
