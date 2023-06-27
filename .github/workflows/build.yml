@@ -189,8 +189,8 @@ jobs:
         run: |
           rm -rf dist
           gradle wrapper --gradle-version 6.3
-#          gradle build
           ./gradlew --scan buildArtifact
+#          gradle build
 
 
       #     poetry run pytest --junitxml=build/reports/pytest.xml --cov=podaac/ --cov-report=xml:build/reports/coverage.xml -m "not aws and not integration" tests/
