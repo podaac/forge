@@ -63,6 +63,8 @@ jobs:
       # Alpha Logic - Use the project version number and add -alpha.1 or bump
       # alpha number
       - name: Bump alpha version
+        env:
+          VERSION: ${{ env.the_version }}
         # If triggered by push to the develop branch
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
