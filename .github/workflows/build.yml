@@ -73,7 +73,9 @@ jobs:
             alpha_number=$(echo "${VERSION}" | sed -e s/^.*-alpha.//g)
             alpha_number=$alpha_number+1
 
-            the_version=echo "$the_version" | sed -e s/-alpha*//g
+            echo "Alpha Number is now $alpha_number"
+
+            the_version=echo "$the_version" | sed -e s/^.*-alpha*//g
 
             the_version="${{ env.the_version }}-alpha.$alpha_number"
 
