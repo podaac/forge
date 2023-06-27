@@ -1,5 +1,8 @@
 buildscript {
     repositories {
+        ivy {
+            url 'https://cae-artifactory.jpl.nasa.gov/artifactory/plugins-release'
+        }
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -25,7 +28,9 @@ allprojects {
 
 repositories {
     maven { url 'https://repo.osgeo.org/repository/release/' }
-    maven { url 'https://repo.clojars.org' }
+    maven { url 'https://cae-artifactory.jpl.nasa.gov/artifactory/maven-libs-release-local' }
+    maven { url 'https://cae-artifactory.jpl.nasa.gov/artifactory/apache-maven-remote' }
+    maven { url 'https://cae-artifactory.jpl.nasa.gov/artifactory/clojars-remote' }
     maven { url "https://jitpack.io" }
     mavenCentral()
 }
@@ -39,6 +44,22 @@ configurations {
     antJUnit
     runtimeClasspath {
         extendsFrom developmentOnly
+    }
+}
+
+artifactory {
+    contextUrl = "https://cae-artifactory.jpl.nasa.gov/artifactory"
+    //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'libs-release-local'
+            maven = false
+            ivy {
+                ivyLayout = '[organization]/[module]/[revision]/[module]-[revision](-[classifier]).pom'
+                artifactLayout = '[organization]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]'
+                mavenCompatible = true
+            }
+        }
     }
 }
 

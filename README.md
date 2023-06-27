@@ -69,6 +69,7 @@ lambda.  build.sh is a temporary solution to build forge module (lambda code and
 ```shell script
     module "forge_module" {
     // Required parameters
+    # source = "https://cae-artifactory.jpl.nasa.gov/artifactory/general-develop/gov/nasa/podaac/cumulus/forge/release-version/forge-release-version.zip"
     prefix = var.prefix
     region = var.region
     cmr_environment = var.cmr_environment

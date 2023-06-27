@@ -32,7 +32,9 @@ public abstract class FootprintStrategy {
         @SerializedName("smap")
         SMAP("smap"),
         @SerializedName("fixed")
-        FIXED("fixed");
+        FIXED("fixed"),
+        @SerializedName("swot_linestring")
+        SWOT_LINESTRING("swot_linestring");
         
         private final String strategyName;
         

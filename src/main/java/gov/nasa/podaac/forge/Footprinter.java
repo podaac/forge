@@ -130,6 +130,9 @@ public class Footprinter {
             case SMAP:
                 footprintStrategy = new FootprintStrategyPolarSmap();
                 break;
+            case SWOT_LINESTRING:
+                footprintStrategy = new FootprintStrategyLinestring();
+                break;
             default:
                 log.error("The provided footprint strategy {} is invalid", footprintStrategyType.getStrategyName());
                 throw new FootprintException("Footprint strategy " + footprintStrategyType.getStrategyName() + " was not recognized");
@@ -151,27 +154,38 @@ public class Footprinter {
             Map<String, Double> lonAttMap = getAttributes(lonVariable);
             int[] shapes = latVariable.getShape();
             
-            if (footprint.getSide1() != null) {
+            String strategyName = footprintStrategyType.getStrategyName();
+            if(strategyName == "swot_linestring"){
                 rangeList = buildRanges(footprint.getSide1(), shapes);
-                side1 = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap);
-                
+                side1 = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap, strategyName);      
+                top = null;
+                bottom = null;
+                side2 = null;
             }
-            
-            if (footprint.getBottom() != null) {
-                rangeList = buildRanges(footprint.getBottom(), shapes);
-                bottom = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap);
+
+            else{
+                if (footprint.getSide1() != null) {
+                    rangeList = buildRanges(footprint.getSide1(), shapes);
+                    side1 = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap, strategyName);
+                    
+                }
                 
-            }
-            if (footprint.getSide2() != null) {
-                rangeList = buildRanges(footprint.getSide2(), shapes);
-                side2 = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap);
+                if (footprint.getBottom() != null) {
+                    rangeList = buildRanges(footprint.getBottom(), shapes);
+                    bottom = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap, strategyName);
+                    
+                }
+                if (footprint.getSide2() != null) {
+                    rangeList = buildRanges(footprint.getSide2(), shapes);
+                    side2 = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap, strategyName);
+                    
+                }
                 
-            }
-            
-            if (footprint.getTop() != null) {
-                rangeList = buildRanges(footprint.getTop(), shapes);
-                top = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap);
-                
+                if (footprint.getTop() != null) {
+                    rangeList = buildRanges(footprint.getTop(), shapes);
+                    top = processRange(rangeList, lonVariable, latVariable, lonAttMap, latAttMap, strategyName);
+                    
+                }
             }
             
             if (footprintStrategyType == FootprintStrategy.Strategy.SMAP) {
@@ -206,11 +220,20 @@ public class Footprinter {
      * @return Constructed list of lat/lon coordinates, masked and scaled using variable attributes.
      */
     public List<Coordinate> constructCoordsFromNetcdf(List<Range> rangeList, Variable lonVariable, Variable latVariable,
-                                                      Map<String, Double> lonAttMap, Map<String, Double> latAttMap)
+                                                      Map<String, Double> lonAttMap, Map<String, Double> latAttMap, String strategyName)
             throws IOException, InvalidRangeException {
-        Array latData = latVariable.read(rangeList);
-        Array lonData = lonVariable.read(rangeList);
-        
+
+        Array latData = null;
+        Array lonData = null;
+        if(strategyName == "swot_linestring"){
+            latData = latVariable.read();
+            lonData = lonVariable.read();
+        }
+        else{
+            latData = latVariable.read(rangeList);
+            lonData = lonVariable.read(rangeList);
+        }
+
         boolean is360 = datasetConfig.isIs360();
         boolean removeOrigin = datasetConfig.getFootprint().isRemoveOrigin();
         
@@ -252,7 +275,7 @@ public class Footprinter {
      * @return A list of lon/lat coordinates
      */
     public List<Coordinate> processRange(List<Range> rangeList, Variable lonVariable, Variable latVariable,
-                                         Map<String, Double> lonAttMap, Map<String, Double> latAttMap)
+                                         Map<String, Double> lonAttMap, Map<String, Double> latAttMap, String strategyName)
             throws IOException, InvalidRangeException {
         
         boolean findValid = datasetConfig.getFootprint().isFindValid();
@@ -261,7 +284,7 @@ public class Footprinter {
         // Check if the current range contains any coordinates. If not, move the range to the right or left, and
         // keep retrying until lonLats contains values.
         do {
-            List<Coordinate> lonLats = constructCoordsFromNetcdf(rangeList, lonVariable, latVariable, lonAttMap, latAttMap);
+            List<Coordinate> lonLats = constructCoordsFromNetcdf(rangeList, lonVariable, latVariable, lonAttMap, latAttMap, strategyName);
             // If findValid is false, or lonLats contains values, just return lonLats.
             if (!findValid || !lonLats.isEmpty()) {
                 return lonLats;

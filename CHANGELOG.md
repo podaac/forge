@@ -16,6 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.7.0]
+
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+- **SWOT FIX**
+  - Added a new new swot_linestring strategy where we process only the side1 and not other to generate a linestring cause the lat lon is a flat 1d
+- **PODAAC-5547**
+ - Add a try catch in polar strategy that was in original code
+### Security
+
+
 ## [0.6.0]
 
 ### Added

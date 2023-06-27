@@ -45,7 +45,7 @@ public class FootprintStrategyPolar extends FootprintStrategy {
         // or will away into the -180 or 180 meridians
         
         procSide(sides1, tops, bottoms, "sides1");
-        
+
         //reverse each list in the coordinate lists
         List<List<Coordinate>> topsR = reverseLists(tops);
         List<List<Coordinate>> bottomsR = reverseLists(bottoms);
@@ -142,6 +142,7 @@ public class FootprintStrategyPolar extends FootprintStrategy {
                           List<List<Coordinate>> bottoms,
                           String label) {
         
+
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(1000d));
         
         if (sides.size() == 1) {
@@ -167,33 +168,40 @@ public class FootprintStrategyPolar extends FootprintStrategy {
                 // check to see if 'top' or 'bottom' intersects with self.
                 // tops first
                 for (List<Coordinate> coordList : tops) {
-                    LineString rowLineString = geometryFactory.createLineString(coordList.toArray(new Coordinate[0]));
-                    MultiPoint multiPoint = (MultiPoint) lineString.intersection(rowLineString);
-                    log.trace(String.valueOf(multiPoint));
-                    for (Coordinate coordinate : multiPoint.getCoordinates()) {
-                        if (!coordinate.equals(sides.get(0).get(0))) {
-                            // Found a hole
-                            int i = findClosest(sides.get(0), coordinate);
-                            sides.set(0, sides.get(0).subList(0, i));
-                            sides.get(0).add(sides.get(0).get(0));
-                            coordinateLists.add(sides.get(0));
+                    LineString rowLineString = geometryFactory.createLineString(coordList.toArray(new Coordinate[coordList.size()]));
+                    try {
+                        MultiPoint multiPoint = (MultiPoint) lineString.intersection(rowLineString);
+                        log.trace(String.valueOf(multiPoint));
+                        for (Coordinate coordinate : multiPoint.getCoordinates()) {
+                            if (!coordinate.equals(sides.get(0).get(0))) {
+                                // Found a hole
+                                int i = findClosest(sides.get(0), coordinate);
+                                sides.set(0, sides.get(0).subList(0, i));
+                                sides.get(0).add(sides.get(0).get(0));
+                                coordinateLists.add(sides.get(0));
+                            }
                         }
-                    }
+                    }catch(Exception e){}
                 }
                 // bottoms
                 for (List<Coordinate> coordList : bottoms) {
-                    LineString rowLineString = geometryFactory.createLineString(coordList.toArray(new Coordinate[0]));
-                    MultiPoint multiPoint = (MultiPoint) lineString.intersection(rowLineString);
-                    log.trace(String.valueOf(multiPoint));
-                    for (Coordinate coordinate : multiPoint.getCoordinates()) {
-                        if (!coordinate.equals(sides.get(0).get(sides.get(0).size() - 1))) {
-                            // Found a hole
-                            int i = findClosest(sides.get(0), coordinate);
-                            sides.set(0, sides.get(0).subList(i, sides.get(0).size()));
-                            sides.get(0).add(sides.get(0).get(0));
-                            coordinateLists.add(sides.get(0));
+                    try{
+                        //LineString rowLineString = geometryFactory.createLineString(coordList.toArray(new Coordinate[0]));
+                        LineString rowLineString = geometryFactory.createLineString(coordList.toArray(new Coordinate[coordList.size()]));
+                        System.out.println(coordList.size());
+                        MultiPoint multiPoint = (MultiPoint) lineString.intersection(rowLineString);
+
+                        log.trace(String.valueOf(multiPoint));
+                        for (Coordinate coordinate : multiPoint.getCoordinates()) {
+                            if (!coordinate.equals(sides.get(0).get(sides.get(0).size() - 1))) {
+                                // Found a hole
+                                int i = findClosest(sides.get(0), coordinate);
+                                sides.set(0, sides.get(0).subList(i, sides.get(0).size()));
+                                sides.get(0).add(sides.get(0).get(0));
+                                coordinateLists.add(sides.get(0));
+                            }
                         }
-                    }
+                    }catch(Exception e){}
                 }
                 
             }
