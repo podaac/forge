@@ -23,7 +23,8 @@ jobs:
       #########################################################################
       # Environment Setup
       #########################################################################
-      # Checks out this repository and sets up the build/test environment with gradle
+      # Checks out this repository and sets up the build/test environment with 
+      # gradle
       - name: Checkout project sources
         uses: actions/checkout@v2
       - name: Setup Gradle
@@ -43,17 +44,18 @@ jobs:
           the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
           rm .temp_version.out
           echo "the_version=$the_version" >> $GITHUB_ENV
+          echo "Initial Version: $the_version"
 
-      # These steps will determine the tags based on the branch name and other actions performed in github
-      # Pre-Alpha Logic - Use the project version number and add the short hash to it
+      # Pre-Alpha Logic - Use the project version number and add the short hash
+      # to it
       - name: Bump pre-alpha version
         # If triggered by push to a feature branch
         if: |
           ${{ startsWith(github.ref, 'refs/heads/issue') }}      ||
           ${{ startsWith(github.ref, 'refs/heads/dependabot/') }} ||
           ${{ startsWith(github.ref, 'refs/heads/feature/') }}
-        # At pre-alpha, append git-commit to version, set it into gradle property
-        # read the version out and set to build_service_version
+        # At pre-alpha, append git-commit to version, set it into gradle
+        # property, read the version out and set to build_service_version
         run: |
           new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
@@ -66,7 +68,8 @@ jobs:
           echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
           echo "venue=sit" >> $GITHUB_ENV
 
-      # Release Candidate Logic
+      # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
+      # number
       - name: Bump rc version
         # If triggered by push to a release branch
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
@@ -75,16 +78,13 @@ jobs:
           # True if the version already has a 'rc' pre-release identifier
 #          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
-
           if [ ${VERSION} == *"rc"* ]; then
-            ./gradlew bumperVersionPrerelease
-            ./gradlew currentVersion -q > .temp_version.out
-            cat .temp_version.out
             echo "the_version=${{ env.the_version }}" >> $GITHUB_ENV
             echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
           else
-            echo "the_version=${{ env.the_version }}-rc.1" >> $GITHUB_ENV
-            echo "software_version=${{ env.the_version }}-rc.1" >> $GITHUB_ENV
+            the_version= echo "$the_version" | sed -e s/-alpha*//g
+            echo "the_version=${the_version}-rc.1" >> $GITHUB_ENV
+            echo "software_version=${the_version}-rc.1" >> $GITHUB_ENV
           fi
           echo "venue=uat" >> $GITHUB_ENV
 
@@ -100,6 +100,11 @@ jobs:
           software_version=${CURRENT_VERSION%%-rc.*}
           echo "software_version=$software_version" >> $GITHUB_ENV
           echo "venue=ops" >> $GITHUB_ENV
+
+      # Update the version number in the application package itself
+      - name: Update version number in the application package
+        run: echo "This is where I need to "
+
 
       #########################################################################
       # Versioning Summary
