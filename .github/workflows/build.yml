@@ -77,9 +77,9 @@ jobs:
 
             the_version=$(echo "$the_version" | sed -e s/^.*-alpha*//g)
 
-            the_version="${{ env.the_version }}-alpha.$alpha_number"
+            the_version="${the_version}-alpha.$alpha_number"
 
-            echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
+            echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "venue=sit" >> $GITHUB_ENV
           else
             the_version="${{ env.the_version }}-alpha.1"
