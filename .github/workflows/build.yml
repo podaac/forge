@@ -60,13 +60,25 @@ jobs:
           new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
 
-      # Alpha Logic - Use the project version number and 
+      # Alpha Logic - Use the project version number and add -alpha.1 or bump
+      # alpha number
       - name: Bump alpha version
         # If triggered by push to the develop branch
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
-          echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
-          echo "venue=sit" >> $GITHUB_ENV
+          if [ ${VERSION} == *"-alpha"* ]; then
+            alpha_number=$(echo "${VERSION}" | sed -e s/*-alpha.//g)
+            alpha_number=$alpha_number+1
+
+            the_version=echo "$the_version" | sed -e s/-alpha*//g
+
+            the_version="${{ env.the_version }}-alpha.$alpha_number"
+
+            echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
+            echo "venue=sit" >> $GITHUB_ENV
+          else
+            the_version="${{ env.the_version }}-alpha.1"
+          fi
 
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
