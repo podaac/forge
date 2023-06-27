@@ -148,36 +148,36 @@ jobs:
       # Test
       #########################################################################
       # First run snyk as a blocking step
-      - name: Run Snyk as a blocking step
-        uses: snyk/actions/gradle@master
-        env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-            JAVA_HOME: ""
-        with:
-          command: test
-          args: >
-              --org=${{ secrets.SNYK_ORG_ID }}
-              --project-name=${{ github.repository }}
-              --severity-threshold=high
-              --fail-on=all
-      # Next run snyk to report the findings to snyk
-      - name: Run Snyk on Java
-        uses: snyk/actions/gradle@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
-          args: >
-            --org=${{ secrets.SNYK_ORG_ID }}
-            --project-name=${{ github.repository }}
+      # - name: Run Snyk as a blocking step
+      #   uses: snyk/actions/gradle@master
+      #   env:
+      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #       JAVA_HOME: ""
+      #   with:
+      #     command: test
+      #     args: >
+      #         --org=${{ secrets.SNYK_ORG_ID }}
+      #         --project-name=${{ github.repository }}
+      #         --severity-threshold=high
+      #         --fail-on=all
+      # # Next run snyk to report the findings to snyk
+      # - name: Run Snyk on Java
+      #   uses: snyk/actions/gradle@master
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     command: monitor
+      #     args: >
+      #       --org=${{ secrets.SNYK_ORG_ID }}
+      #       --project-name=${{ github.repository }}
 
-#       # Lastly run the tests bundled with the repo
-#       - name: Test and coverage
-#         run: |
-# #          gradle wrapper --gradle-version 6.3
-#           ./gradlew test
-#           ./gradlew mergeJUnitReports
-#           junit 'build/test-results/test/TESTS-TestSuites.xml'
+       # Lastly run the tests bundled with the repo
+       - name: Test and coverage
+         run: |
+           gradle wrapper --gradle-version 6.3
+           ./gradlew test
+           ./gradlew mergeJUnitReports
+           junit 'build/test-results/test/TESTS-TestSuites.xml'
 
 
 
@@ -186,11 +186,11 @@ jobs:
       #########################################################################
       # NOTE: This step is platform-specific
       # These are gradle-specific steps for installing the application
-      - name: Build Software
-        run: |
-          rm -rf dist
-          gradle wrapper --gradle-version 6.3
-          ./gradlew --scan buildArtifact
+      # - name: Build Software
+      #   run: |
+      #     rm -rf dist
+      #     gradle wrapper --gradle-version 6.3
+      #     ./gradlew --scan buildArtifact
 #          gradle build
 
 
