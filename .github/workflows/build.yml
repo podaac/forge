@@ -71,7 +71,7 @@ jobs:
           echo "The initial version is ${VERSION}"
           if [[ ${VERSION} == *"-alpha"* ]]; then
             alpha_number=$(echo "${VERSION}" | sed -e s/^.*-alpha.//g)
-            alpha_number=$alpha_number+1
+            alpha_number=$((alpha_number+1))
 
             echo "Alpha Number is now $alpha_number"
 
