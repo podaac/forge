@@ -119,7 +119,6 @@ jobs:
       - name: Update version number in the application package
         run: |
           ./gradlew setCurrentVersion -Pargs=${{ env.the_version }}
-          ./gradlew bumperVersionPreminor
           ./gradlew currentVersion -q > .temp_version.out
           new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
           rm .temp_version.out
