@@ -79,6 +79,8 @@ jobs:
           else
             the_version="${{ env.the_version }}-alpha.1"
           fi
+          echo "The new version number will be $the_version"
+
 
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
