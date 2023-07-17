@@ -189,7 +189,7 @@ jobs:
       - name: Build Software
         run: |
           rm -rf dist
-          ./gradlew --scan buildArtifact
+          ./gradlew buildArtifact
 #          gradle wrapper --gradle-version 6.3
 #          gradle build
 
