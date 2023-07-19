@@ -67,26 +67,6 @@ jobs:
           echo "software_version=${{ env.the_version }}" >> $GITHUB_ENV
           echo "venue=sit" >> $GITHUB_ENV
 
-      # Release Candidate Logic
-      - name: Bump rc version
-        # If triggered by push to a release branch
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
-        env:
-          # True if the version already has a 'rc' pre-release identifier
-          BUMP_RC: ${{ contains(${{ env.the_version }}, 'rc') }}
-        run: |
-          if [ "$BUMP_RC" = true ]; then
-            ./gradlew bumperVersionPrerelease
-            ./gradlew currentVersion -q > .temp_version.out
-            cat .temp_version.out
-            the_version=${{ env.the_version }}
-
-          else
-            echo "the_version={{ env.the_version }}-rc.1"
-          fi
-          echo "software_version=$the_version" >> $GITHUB_ENV
-          echo "venue=uat" >> $GITHUB_ENV
-
       # Release Logic
       - name: Release version
         # If triggered by push to the main branch
