@@ -92,6 +92,17 @@ jobs:
           env
 
 
+      #########################################################################
+      # Build
+      #########################################################################
+      # NOTE: This step is platform-specific
+      # These are gradle-specific steps for installing the application
+      - name: Build Software
+        run: |
+          rm -rf dist
+          gradle wrapper --gradle-version 6.3
+          ./gradlew buildArtifact
+
       # #########################################################################
       # # Build
       # #########################################################################
