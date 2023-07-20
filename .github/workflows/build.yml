@@ -43,6 +43,7 @@ jobs:
           echo "the_env=$(printenv)" >> $GITHUB_ENV
           echo "${{ github.event.repository.name }}"
           ./gradlew currentVersion -q > .temp_version.out
+          cat .temp_version.out
           the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
           rm .temp_version.out
           echo "the_version=$the_version" >> $GITHUB_ENV
