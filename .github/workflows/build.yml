@@ -74,9 +74,9 @@ jobs:
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
           if [[ ${VERSION} == *"-alpha"* ]]; then
-            alpha_number=$(echo "${VERSION}" | sed -e s/^.*-alpha.//g)
+            alpha_number=$(echo "${VERSION}" | sed -e "s/^.*-alpha.//g")
             alpha_number=$((alpha_number+1))
-            the_version=$(echo "$the_version" | sed -e s/-alpha.*//g)
+            the_version=$(echo "$the_version" | sed -e "s/-alpha.*//g")
             the_version="${the_version}-alpha.$alpha_number"
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
@@ -99,13 +99,9 @@ jobs:
         run: |
           if [[ ${VERSION} == *"-rc"* ]]; then
             rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
-            echo "rc number: ${rc_number}"
             rc_number=$((rc_number+1))
-            echo "rc number: ${rc_number}"
             the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
-            echo "the version: ${the_version}"
             the_version="${the_version}-rc.${rc_number}"
-            echo "the version: ${the_version}"
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           else
@@ -113,7 +109,6 @@ jobs:
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           fi
-          echo "New Version: ${the_version}"
           echo "venue=uat" >> $GITHUB_ENV
 
       # Release Logic
@@ -252,6 +247,9 @@ jobs:
           type: 'zip'
           filename: '${{ github.event.repository.name }}-${{ env.the_version}}'
           exclusions: '*.git* /*node_modules/* .editorconfig'
+
+      - name: Show archive
+        run: ls -al
 
       - name: Upload Release
         uses: ncipollo/release-action@v1.12.0
