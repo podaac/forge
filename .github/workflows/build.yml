@@ -98,23 +98,23 @@ jobs:
           # BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
           if [[ ${VERSION} == *"-rc"* ]]; then
-            echo "This is a release candidate"
+            rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
+            echo "rc number: ${rc_number}"
+            rc_number=$((rc_number+1))
+            echo "rc number: ${rc_number}"
+            the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
+            echo "the version: ${the_version}"
+            the_version="${the_version}-rc.${rc_number}"
+            echo "the version: ${the_version}"
+            echo "software_version=${the_version}" >> $GITHUB_ENV
+            echo "the_version=${the_version}" >> $GITHUB_ENV
+          else
+            the_version="${{ env.the_version }}-rc.1"
+            echo "software_version=${the_version}" >> $GITHUB_ENV
+            echo "the_version=${the_version}" >> $GITHUB_ENV
           fi
-          
-
-          #   rc_number=$(echo "${VERSION}" | sed -e s/^.*-rc.//g)
-          #   rc_number=$((alpha_number+1))
-          #   the_version=$(echo "$the_version" | sed -e s/-rc.*//g)
-          #   the_version="${the_version}-rc.$rc_number"
-          #   echo "software_version=${the_version}" >> $GITHUB_ENV
-          #   echo "the_version=${the_version}" >> $GITHUB_ENV
-          # else
-          #   the_version="${{ env.the_version }}-rc.1"
-          #   echo "software_version=${the_version}" >> $GITHUB_ENV
-          #   echo "the_version=${the_version}" >> $GITHUB_ENV
-          # fi
-          # echo "New Version: ${the_version}"
-          # echo "venue=uat" >> $GITHUB_ENV
+          echo "New Version: ${the_version}"
+          echo "venue=uat" >> $GITHUB_ENV
 
       # Release Logic
       - name: Release version
