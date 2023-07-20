@@ -188,7 +188,7 @@ jobs:
         uses: snyk/actions/gradle@master
         env:
             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-            JAVA_HOME: 
+            JAVA_HOME: /usr/lib/jvm/default-java/
         with:
           command: test
           args: >
