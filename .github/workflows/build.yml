@@ -90,12 +90,9 @@ jobs:
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
       - name: Bump rc version
-        # If triggered by push to a release branch
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
         env:
           VERSION: ${{ env.the_version }}
-          # True if the version already has a 'rc' pre-release identifier
-          # BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
           if [[ ${VERSION} == *"-rc"* ]]; then
             rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
@@ -156,6 +153,7 @@ jobs:
         run: |
           rm -rf dist
           ./gradlew --scan buildArtifact
+          ls -al
 
 
       #########################################################################
@@ -247,42 +245,12 @@ jobs:
           type: 'zip'
           filename: '${{ github.event.repository.name }}-${{ env.the_version}}.zip'
           exclusions: '*.git* /*node_modules/* .editorconfig'
-
-      - name: Show archive
-        run: ls -al
-
       - name: Upload Release
         uses: ncipollo/release-action@v1.12.0
         with:
           tag: ${{ env.the_version }}
           artifacts: "${{ github.event.repository.name }}-${{ env.the_version}}.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-
-        #   stage("Upload to Artifactory"){
-        #     when{
-        #         anyOf{
-        #             branch 'develop'
-        #             branch 'master'
-        #             changeRequest target: 'develop'
-        #             changeRequest target: 'master'
-        #             changelog '/jenkins deploy-dev' 
-        #         }
-        #     }
-        #     steps{
-        #         unstash name: 'build-info'
-        #         unstash name: 'artifacts'
-        #         script{
-        #             build_info = readYaml file: 'build-info.yaml'
-        #             the_version = build_info['build_service_version']
-        #         }
-        #         echo "Publish ${the_version} to ${build_info.artifactory}"
-        #         withCredentials([usernamePassword(credentialsId: env.ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_PASSWORD')]){
-        #             sh "ls -la"
-        #             sh "cd dist; pwd; ls -la; curl -u ${ARTIFACTORY_USER}:${ARTIFACTORY_PASSWORD} -X PUT ${build_info.artifactory}/${the_version}/forge-${the_version}.zip -T forge-${the_version}.zip"
-        #             sh "echo = Upload to CAE Artifactory Succeeded =="
-        #         }
-        #     }
-        # }
 
       #########################################################################
       # Build and Publish Docker Container
@@ -315,6 +283,11 @@ jobs:
           tags: |
             type=semver,pattern={{version}},value=${{ env.THE_VERSION }}
             type=raw,value=${{ env.THE_ENV }}
+
+      - name: Show meta outputs
+        run: |
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "labels: ${{ steps.meta.outputs.labels }}"
 
       - name: Build and push Docker image
         if: |
