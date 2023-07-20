@@ -94,7 +94,7 @@ jobs:
         env:
           VERSION: ${{ env.the_version }}
           # True if the version already has a 'rc' pre-release identifier
-          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
+          # BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
           if [[ ${VERSION} == *"-rc"* ]]; then
             rc_number=$(echo "${VERSION}" | sed -e s/^.*-rc.//g)
