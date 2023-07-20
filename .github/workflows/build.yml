@@ -62,6 +62,7 @@ jobs:
         run: |
           new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
+          echo "Github REF: ${{ github.ref }}"
 
       # Alpha Logic - Use the project version number and add -alpha.1 or bump
       # alpha number
@@ -93,7 +94,7 @@ jobs:
         env:
           VERSION: ${{ env.the_version }}
           # True if the version already has a 'rc' pre-release identifier
-#          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
+          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
           if [[ ${VERSION} == *"-rc"* ]]; then
             rc_number=$(echo "${VERSION}" | sed -e s/^.*-rc.//g)
