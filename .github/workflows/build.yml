@@ -154,6 +154,7 @@ jobs:
           rm -rf dist
           ./gradlew --scan buildArtifact
           ls -al
+          ls -al dist/
 
 
       #########################################################################
@@ -281,8 +282,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=${{ env.THE_VERSION }}
-            type=raw,value=${{ env.THE_ENV }}
+            type=semver,pattern={{version}},value=${{ env.the_version }}
+            type=raw,value=${{ env.the_env }}
 
       - name: Show meta outputs
         run: |
