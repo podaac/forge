@@ -222,6 +222,8 @@ jobs:
           git push
 
       - name: Push Tag
+        env:
+          VERSION: ${{ env.the_version }}
         if: |
           github.ref == 'refs/heads/develop' ||
           github.ref == 'refs/heads/main'    ||
@@ -229,8 +231,8 @@ jobs:
         run: |
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -a "${{ env.the_version }}" -m "Version ${{ env.the_version }}"
-          git push origin "${{ env.the_version }}"
+          git tag -a "${VERSION}" -m "Version ${VERSION}"
+          git push origin "${VERSION}"
 
 
       #########################################################################
