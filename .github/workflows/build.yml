@@ -108,6 +108,7 @@ jobs:
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           fi
+          echo "New Version: ${the_version}"
           echo "venue=uat" >> $GITHUB_ENV
 
       # Release Logic
