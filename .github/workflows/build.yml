@@ -145,43 +145,6 @@ jobs:
           echo "VENUE: ${{ env.venue }}"
 
       #########################################################################
-      # Test
-      #########################################################################
-      # First run snyk as a blocking step
-      # - name: Run Snyk as a blocking step
-      #   uses: snyk/actions/gradle@master
-      #   env:
-      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #       JAVA_HOME: ""
-      #   with:
-      #     command: test
-      #     args: >
-      #         --org=${{ secrets.SNYK_ORG_ID }}
-      #         --project-name=${{ github.repository }}
-      #         --severity-threshold=high
-      #         --fail-on=all
-      # # Next run snyk to report the findings to snyk
-      # - name: Run Snyk on Java
-      #   uses: snyk/actions/gradle@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     command: monitor
-      #     args: >
-      #       --org=${{ secrets.SNYK_ORG_ID }}
-      #       --project-name=${{ github.repository }}
-
-       # Lastly run the tests bundled with the repo
-#      - name: Test and coverage
-#        run: |
-#          gradle wrapper --gradle-version 6.3
-#          ./gradlew test
-#          ./gradlew mergeJUnitReports
-#          junit 'build/test-results/test/TESTS-TestSuites.xml'
-
-
-
-      #########################################################################
       # Build
       #########################################################################
       # NOTE: This step is platform-specific
@@ -212,28 +175,28 @@ jobs:
       #       -Dsonar.python.version=3.8,3.9,3.10
 
       # This step will fail the build if snyk fails
-      - name: Run Snyk as a blocking step
-        uses: snyk/actions/python-3.8@master
-        env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: >
-              --org=${{ secrets.SNYK_ORG_ID }}
-              --project-name=${{ github.repository }}
-              --severity-threshold=high
-              --fail-on=all
+      # - name: Run Snyk as a blocking step
+      #   uses: snyk/actions/python-3.8@master
+      #   env:
+      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     command: test
+      #     args: >
+      #         --org=${{ secrets.SNYK_ORG_ID }}
+      #         --project-name=${{ github.repository }}
+      #         --severity-threshold=high
+      #         --fail-on=all
 
-      # This step will send the results of snyk to the snyk servers
-      - name: Run Snyk on Python
-        uses: snyk/actions/python-3.8@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
-          args: >
-            --org=${{ secrets.SNYK_ORG_ID }}
-            --project-name=${{ github.repository }}
+      # # This step will send the results of snyk to the snyk servers
+      # - name: Run Snyk on Python
+      #   uses: snyk/actions/python-3.8@master
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     command: monitor
+      #     args: >
+      #       --org=${{ secrets.SNYK_ORG_ID }}
+      #       --project-name=${{ github.repository }}
 
       # Lastly run the tests bundled with the repo
       # - name: Test and coverage
