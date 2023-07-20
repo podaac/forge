@@ -48,6 +48,7 @@ jobs:
           rm .temp_version.out
           echo "the_version=$the_version" >> $GITHUB_ENV
           echo "Initial Version: [$the_version]"
+          echo "Shell: $SHELL ($0)"
 
       # Pre-Alpha Logic - Use the project version number and add the short hash
       # to it
