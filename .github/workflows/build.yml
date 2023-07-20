@@ -245,7 +245,7 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          filename: '${{ github.event.repository.name }}-${{ env.the_version}}'
+          filename: '${{ github.event.repository.name }}-${{ env.the_version}}.zip'
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: Show archive
