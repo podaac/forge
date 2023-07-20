@@ -46,7 +46,7 @@ jobs:
           the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
           rm .temp_version.out
           echo "the_version=$the_version" >> $GITHUB_ENV
-          echo "Initial Version: $the_version"
+          echo "Initial Version: [$the_version]"
 
       # Pre-Alpha Logic - Use the project version number and add the short hash
       # to it
@@ -138,7 +138,7 @@ jobs:
       - name: Versioning Summary
         run: |
           echo "the_service: ${{ env.the_service }}"
-          echo "the_version: ${{ env.the_version }}"
+          echo "new version (the_version): ${{ env.the_version }}"
           echo "the_env: ${{ env.the_env }}"
           echo "software_version: ${{ env.software_version }}"
           echo "GITHUB REF: ${{ github.ref }}"
