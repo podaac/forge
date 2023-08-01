@@ -43,10 +43,12 @@ jobs:
           echo "the_env=$(printenv)" >> $GITHUB_ENV
           echo "${{ github.event.repository.name }}"
           ./gradlew currentVersion -q > .temp_version.out
-          the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
+          cat .temp_version.out
+          the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%' |sed -e "s/Got.*//")
           rm .temp_version.out
           echo "the_version=$the_version" >> $GITHUB_ENV
-          echo "Initial Version: $the_version"
+          echo "Initial Version: [$the_version]"
+          echo "Shell: $SHELL ($0)"
 
       # Pre-Alpha Logic - Use the project version number and add the short hash
       # to it
@@ -61,6 +63,7 @@ jobs:
         run: |
           new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
+          echo "Github REF: ${{ github.ref }}"
 
       # Alpha Logic - Use the project version number and add -alpha.1 or bump
       # alpha number
@@ -71,9 +74,9 @@ jobs:
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
           if [[ ${VERSION} == *"-alpha"* ]]; then
-            alpha_number=$(echo "${VERSION}" | sed -e s/^.*-alpha.//g)
+            alpha_number=$(echo "${VERSION}" | sed -e "s/^.*-alpha.//g")
             alpha_number=$((alpha_number+1))
-            the_version=$(echo "$the_version" | sed -e s/-alpha.*//g)
+            the_version=$(echo "$the_version" | sed -e "s/-alpha.*//g")
             the_version="${the_version}-alpha.$alpha_number"
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
@@ -87,18 +90,15 @@ jobs:
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
       - name: Bump rc version
-        # If triggered by push to a release branch
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
         env:
           VERSION: ${{ env.the_version }}
-          # True if the version already has a 'rc' pre-release identifier
-#          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
         run: |
           if [[ ${VERSION} == *"-rc"* ]]; then
-            rc_number=$(echo "${VERSION}" | sed -e s/^.*-rc.//g)
-            rc_number=$((alpha_number+1))
-            the_version=$(echo "$the_version" | sed -e s/-rc.*//g)
-            the_version="${the_version}-rc.$rc_number"
+            rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
+            rc_number=$((rc_number+1))
+            the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
+            the_version="${the_version}-rc.${rc_number}"
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           else
@@ -138,7 +138,7 @@ jobs:
       - name: Versioning Summary
         run: |
           echo "the_service: ${{ env.the_service }}"
-          echo "the_version: ${{ env.the_version }}"
+          echo "new version (the_version): ${{ env.the_version }}"
           echo "the_env: ${{ env.the_env }}"
           echo "software_version: ${{ env.software_version }}"
           echo "GITHUB REF: ${{ github.ref }}"
@@ -153,6 +153,8 @@ jobs:
         run: |
           rm -rf dist
           ./gradlew --scan buildArtifact
+          ls -al
+          ls -al dist/
 
 
       #########################################################################
@@ -174,11 +176,19 @@ jobs:
       #       -Dsonar.projectVersion=${{ env.software_version }}
       #       -Dsonar.python.version=3.8,3.9,3.10
 
-      # This step will fail the build if snyk fails
+      # - name: Java Debugging
+      #   run: |
+      #     java --version
+      #     which java
+      #     ls -al /usr/bin/java
+
+
+      # # This step will fail the build if snyk fails
       # - name: Run Snyk as a blocking step
-      #   uses: snyk/actions/python-3.8@master
+      #   uses: snyk/actions/gradle@master
       #   env:
       #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #       JAVA_HOME: /usr/lib/jvm/default-java/
       #   with:
       #     command: test
       #     args: >
@@ -218,10 +228,12 @@ jobs:
         run: |
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git commit -am "/version ${{ env.THE_VERSION }}"
+          git commit -am "/version ${{ env.the_version }}"
           git push
 
       - name: Push Tag
+        env:
+          VERSION: ${{ env.the_version }}
         if: |
           github.ref == 'refs/heads/develop' ||
           github.ref == 'refs/heads/main'    ||
@@ -229,50 +241,19 @@ jobs:
         run: |
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -a "${{ env.THE_VERSION }}" -m "Version ${{ env.THE_VERSION }}"
-          git push origin "${{ env.THE_VERSION }}"
+          git tag -a "${VERSION}" -m "Version ${VERSION}"
+          git push origin "${VERSION}"
 
 
       #########################################################################
       # Publish release to releases
       #########################################################################
-      - name: Archive Release
-        uses: thedoctor0/zip-release@0.7.1
-        with:
-          type: 'zip'
-          filename: '${{ github.repository }}-${{ env.THE_VERSION}}'
-          exclusions: '*.git* /*node_modules/* .editorconfig'
-      - name: Upload Release
+      - name: Upload Release Artifacts
         uses: ncipollo/release-action@v1.12.0
         with:
-          artifacts: "${{ github.repository }}-${{ env.THE_VERSION}}.zip"
+          tag: ${{ env.the_version }}
+          artifacts: "dist/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-
-        #   stage("Upload to Artifactory"){
-        #     when{
-        #         anyOf{
-        #             branch 'develop'
-        #             branch 'master'
-        #             changeRequest target: 'develop'
-        #             changeRequest target: 'master'
-        #             changelog '/jenkins deploy-dev' 
-        #         }
-        #     }
-        #     steps{
-        #         unstash name: 'build-info'
-        #         unstash name: 'artifacts'
-        #         script{
-        #             build_info = readYaml file: 'build-info.yaml'
-        #             the_version = build_info['build_service_version']
-        #         }
-        #         echo "Publish ${the_version} to ${build_info.artifactory}"
-        #         withCredentials([usernamePassword(credentialsId: env.ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_PASSWORD')]){
-        #             sh "ls -la"
-        #             sh "cd dist; pwd; ls -la; curl -u ${ARTIFACTORY_USER}:${ARTIFACTORY_PASSWORD} -X PUT ${build_info.artifactory}/${the_version}/forge-${the_version}.zip -T forge-${the_version}.zip"
-        #             sh "echo = Upload to CAE Artifactory Succeeded =="
-        #         }
-        #     }
-        # }
 
       #########################################################################
       # Build and Publish Docker Container
@@ -303,8 +284,13 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=${{ env.THE_VERSION }}
-            type=raw,value=${{ env.THE_ENV }}
+            type=semver,pattern={{version}},value=${{ env.the_version }}
+            type=raw,value=${{ env.the_env }}
+
+      - name: Show meta outputs
+        run: |
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "labels: ${{ steps.meta.outputs.labels }}"
 
       - name: Build and push Docker image
         if: |
@@ -316,33 +302,33 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/Dockerfilezz
           push: true
           pull: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       #########################################################################
-      # Build and Publish Docker Container
+      # Deploy to AWS via Terraform
       #########################################################################
-      - name: Deploy Terraform
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main'    ||
-          startsWith(github.ref, 'refs/heads/release') ||
-          github.event.head_commit.message == '/deploy sit' ||
-          github.event.head_commit.message == '/deploy uat'
-        working-directory: terraform/
-        env:
-          AWS_ACCESS_KEY_ID:       ${{ secrets[format('AWS_ACCESS_KEY_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          AWS_SECRET_ACCESS_KEY:   ${{ secrets[format('AWS_SECRET_ACCESS_KEY_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          AWS_DEFAULT_REGION:      us-west-2
+      # - name: Deploy Terraform
+      #   if: |
+      #     github.ref == 'refs/heads/develop' ||
+      #     github.ref == 'refs/heads/main'    ||
+      #     startsWith(github.ref, 'refs/heads/release') ||
+      #     github.event.head_commit.message == '/deploy sit' ||
+      #     github.event.head_commit.message == '/deploy uat'
+      #   working-directory: terraform/
+      #   env:
+      #     AWS_ACCESS_KEY_ID:       ${{ secrets[format('AWS_ACCESS_KEY_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
+      #     AWS_SECRET_ACCESS_KEY:   ${{ secrets[format('AWS_SECRET_ACCESS_KEY_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
+      #     AWS_DEFAULT_REGION:      us-west-2
 
-          TF_VAR_hitide_profile_docker_image: "ghcr.io/podaac/hitide-profile:${{ env.DOCKER_METADATA_OUTPUT_VERSION }}"
-          TF_VAR_EARTH_DATA_LOGIN_CLIENT_ID: ${{ secrets[format('EARTH_DATA_LOGIN_CLIENT_ID_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          TF_VAR_EARTH_DATA_LOGIN_PASSWORD: ${{ secrets[format('EARTH_DATA_LOGIN_PASSWORD_{0}', env.TARGET_ENV_UPPERCASE)] }}
+      #     TF_VAR_hitide_profile_docker_image: "ghcr.io/podaac/hitide-profile:${{ env.DOCKER_METADATA_OUTPUT_VERSION }}"
+      #     TF_VAR_EARTH_DATA_LOGIN_CLIENT_ID: ${{ secrets[format('EARTH_DATA_LOGIN_CLIENT_ID_{0}', env.TARGET_ENV_UPPERCASE)] }}
+      #     TF_VAR_EARTH_DATA_LOGIN_PASSWORD: ${{ secrets[format('EARTH_DATA_LOGIN_PASSWORD_{0}', env.TARGET_ENV_UPPERCASE)] }}
 
-        run: |
-          source bin/config.sh ${{ env.THE_ENV }}
-          terraform plan -var-file=tfvars/"${{ env.THE_ENV }}".tfvars -var="app_version=${{ env.THE_VERSION }}" -out="tfplan"
-          terraform apply -auto-approve tfplan          
+      #   run: |
+      #     source bin/config.sh ${{ env.THE_ENV }}
+      #     terraform plan -var-file=tfvars/"${{ env.THE_ENV }}".tfvars -var="app_version=${{ env.THE_VERSION }}" -out="tfplan"
+      #     terraform apply -auto-approve tfplan          
