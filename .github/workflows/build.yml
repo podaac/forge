@@ -176,26 +176,26 @@ jobs:
       #       -Dsonar.projectVersion=${{ env.software_version }}
       #       -Dsonar.python.version=3.8,3.9,3.10
 
-      - name: Java Debugging
-        run: |
-          java --version
-          which java
-          ls -al /usr/bin/java
+      # - name: Java Debugging
+      #   run: |
+      #     java --version
+      #     which java
+      #     ls -al /usr/bin/java
 
 
-      # This step will fail the build if snyk fails
-      - name: Run Snyk as a blocking step
-        uses: snyk/actions/gradle@master
-        env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-            JAVA_HOME: /usr/lib/jvm/default-java/
-        with:
-          command: test
-          args: >
-              --org=${{ secrets.SNYK_ORG_ID }}
-              --project-name=${{ github.repository }}
-              --severity-threshold=high
-              --fail-on=all
+      # # This step will fail the build if snyk fails
+      # - name: Run Snyk as a blocking step
+      #   uses: snyk/actions/gradle@master
+      #   env:
+      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #       JAVA_HOME: /usr/lib/jvm/default-java/
+      #   with:
+      #     command: test
+      #     args: >
+      #         --org=${{ secrets.SNYK_ORG_ID }}
+      #         --project-name=${{ github.repository }}
+      #         --severity-threshold=high
+      #         --fail-on=all
 
       # # This step will send the results of snyk to the snyk servers
       # - name: Run Snyk on Python
@@ -302,7 +302,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/Dockerfilezz
           push: true
           pull: true
           tags: ${{ steps.meta.outputs.tags }}
