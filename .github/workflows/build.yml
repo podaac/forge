@@ -144,6 +144,8 @@ jobs:
           echo "software_version: ${{ env.software_version }}"
           echo "GITHUB REF: ${{ github.ref }}"
           echo "VENUE: ${{ env.venue }}"
+          echo "Target Env Uppercase: ${{ env.TARGET_ENV_UPPERCASE }}"
+          
 
       #########################################################################
       # Build
