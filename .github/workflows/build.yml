@@ -87,6 +87,7 @@ jobs:
             echo "the_version=${the_version}" >> $GITHUB_ENV
           fi
           echo "venue=sit" >> $GITHUB_ENV
+          echo "TARGET_ENV_UPPERCASE=SIT" >> $GITHUB_ENV
 
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
@@ -108,6 +109,7 @@ jobs:
             echo "the_version=${the_version}" >> $GITHUB_ENV
           fi
           echo "venue=uat" >> $GITHUB_ENV
+          echo "TARGET_ENV_UPPERCASE=UAT" >> $GITHUB_ENV
 
       # Release Logic
       - name: Release version
@@ -121,6 +123,7 @@ jobs:
           echo "software_version=$software_version" >> $GITHUB_ENV
           echo "the_version=$software_version" >> $GITHUB_ENV
           echo "venue=ops" >> $GITHUB_ENV
+          echo "TARGET_ENV_UPPERCASE=OPS" >> $GITHUB_ENV
 
       # NOTE: This step is platform-specific
       # Update the version number in the application package itself
