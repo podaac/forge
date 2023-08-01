@@ -303,7 +303,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: docker/Dockerfilezz
+          file: ./Dockerfile
           push: true
           pull: true
           tags: ${{ steps.meta.outputs.tags }}
