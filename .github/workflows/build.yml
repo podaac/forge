@@ -156,6 +156,7 @@ jobs:
           ./gradlew --scan buildArtifact
           ls -al
           ls -al dist/
+          ls -al docker/
 
 
       #########################################################################
