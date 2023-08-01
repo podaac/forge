@@ -162,6 +162,8 @@ jobs:
           ls -al
           ls -al dist/
           ls -al docker/
+          ls -al terraform/
+          ls -al terraform_deploy/
 
 
       #########################################################################
