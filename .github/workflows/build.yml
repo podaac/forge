@@ -352,7 +352,12 @@ jobs:
           TF_VAR_EARTH_DATA_LOGIN_PASSWORD: ${{ secrets[format('EARTH_DATA_LOGIN_PASSWORD_{0}', env.TARGET_ENV_UPPERCASE)] }}
 
         run: |
+          ls -al
+          ls -al bin/
+          which python3
+          python3 --version
           python3 override.py https://github.com/podaac/forge/releases/download/${{ env.the_version }}/forge-${{ env.the_version }}.zip ${{ secrets[format('AWS_ACCOUNT_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}.dkr.ecr.us-west-2.amazonaws.com/podaac/forge:${{ env.the_version }}
+          ls -al
           source bin/config.sh ${{ env.venue }}
           cat override.tf.json
           terraform plan -var-file=tfvars/"${{ env.venue }}".tfvars -var="app_version=${{ env.the_version }}" -out="tfplan"
