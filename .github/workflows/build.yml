@@ -355,6 +355,6 @@ jobs:
           ls -al
           ls -al bin/
           source bin/config.sh ${{ env.venue }}
-          sh "python3 override.py https://github.com/podaac/forge/releases/forge-${{ env.THE_VERSION }}.zip ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/podaac/forge:${{ github.sha }}"
-          terraform plan -var-file=tfvars/"${{ env.venue }}".tfvars -var="app_version=${{ env.THE_VERSION }}" -out="tfplan"
+          sh "python3 override.py https://github.com/podaac/forge/releases/forge-${{ env.the_version }}.zip ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/podaac/forge:${{ env.the_version }}"
+          terraform plan -var-file=tfvars/"${{ env.venue }}".tfvars -var="app_version=${{ env.the_version }}" -out="tfplan"
           terraform apply -auto-approve tfplan
