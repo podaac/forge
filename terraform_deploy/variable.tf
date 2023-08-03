@@ -32,5 +32,3 @@ variable "default_tags" {
 variable "stage" {}
 variable "app_version" {}
 variable "credentials" {}
-variable "subnet_ids" {}
-variable "security_group_ids" {}
