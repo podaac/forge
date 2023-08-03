@@ -333,6 +333,10 @@ jobs:
       #########################################################################
       # Deploy to AWS via Terraform
       #########################################################################
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 0.13.6
+
       - name: Deploy Terraform
         if: |
           github.ref == 'refs/heads/develop' ||
