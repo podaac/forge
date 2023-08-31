@@ -105,7 +105,8 @@ jobs:
           file_version=${VERSION}
           file_version=$(echo "${file_version}" |sed -e "s/-alpha.*//g")
           file_version=$(echo "${file_version}" |sed -e "s/-rc.*//g")
-          echo "FILE VERSION: $file_version"          if [[ ${VERSION} == *"-rc"* ]]; then
+          echo "FILE VERSION: $file_version"
+          if [[ ${VERSION} == *"-rc"* ]]; then
             rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
             rc_number=$((rc_number+1))
             the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
