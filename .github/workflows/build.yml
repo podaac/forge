@@ -95,8 +95,17 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
         env:
           VERSION: ${{ env.the_version }}
+          COMMIT_VERSION: ${{ github.ref }}
         run: |
-          if [[ ${VERSION} == *"-rc"* ]]; then
+          commit_version=$COMMIT_VERSION
+          commit_version=$(echo "${commit_version}" |sed -e "s/^.*\///g")
+          commit_version=$(echo "${commit_version}" |sed -e "s/-alpha.*//g")
+          commit_version=$(echo "${commit_version}" |sed -e "s/-rc.*//g")
+          echo "COMMIT VERSION: $commit_version"
+          file_version=${VERSION}
+          file_version=$(echo "${file_version}" |sed -e "s/-alpha.*//g")
+          file_version=$(echo "${file_version}" |sed -e "s/-rc.*//g")
+          echo "FILE VERSION: $file_version"          if [[ ${VERSION} == *"-rc"* ]]; then
             rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
             rc_number=$((rc_number+1))
             the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
