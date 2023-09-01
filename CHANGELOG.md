@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Moved repo to Github.com** -
   - Repo moved here: https://github.com/podaac/forge
-  - Now builds and deploys in github.com Actions instead of Jenkins
+  - Now builds and deploys in github.com Actions instead of Jenkins 
 ### Deprecated
 ### Removed
 ### Fixed
