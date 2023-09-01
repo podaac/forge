@@ -115,6 +115,7 @@ jobs:
           fi
 
           if [[ ${VERSION} == *"-rc"* ]]; then
+            echo "Bumping up the release candidate number from ${VERSION}"
             rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
             rc_number=$((rc_number+1))
             the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
@@ -123,6 +124,7 @@ jobs:
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           else
+            echo "Initializing the first release candidate for ${VERSION}"
             VERSION="${VERSION}-rc.1"
             echo "software_version=${VERSION}" >> $GITHUB_ENV
             echo "the_version=${VERSION}" >> $GITHUB_ENV
