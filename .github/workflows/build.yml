@@ -123,9 +123,9 @@ jobs:
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           else
-            the_version="${{ env.the_version }}-rc.1"
-            echo "software_version=${the_version}" >> $GITHUB_ENV
-            echo "the_version=${the_version}" >> $GITHUB_ENV
+            VERSION="${VERSION}-rc.1"
+            echo "software_version=${VERSION}" >> $GITHUB_ENV
+            echo "the_version=${VERSION}" >> $GITHUB_ENV
           fi
           echo "new_version=${VERSION}" >> $GITHUB_ENV
           echo "venue=uat" >> $GITHUB_ENV
@@ -162,7 +162,7 @@ jobs:
           echo "GITHUB REF: ${{ github.ref }}"
           echo "VENUE: ${{ env.venue }}"
           echo "Target Env Uppercase: ${{ env.TARGET_ENV_UPPERCASE }}"
-
+          exit 1
 
       # NOTE: This step is platform-specific
       # Update the version number in the application package itself
