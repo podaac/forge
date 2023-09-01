@@ -43,24 +43,31 @@ jobs:
           echo "the_env=$(printenv)" >> $GITHUB_ENV
           echo "${{ github.event.repository.name }}"
           ./gradlew currentVersion -q > .temp_version.out
-          the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
+          cat .temp_version.out
+          the_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%' |sed -e "s/Got.*//")
           rm .temp_version.out
           echo "the_version=$the_version" >> $GITHUB_ENV
-          echo "Initial Version: $the_version"
+          echo "old_version=$the_version" >> $GITHUB_ENV
+          echo "Initial Version: [$the_version]"
+          echo "Shell: $SHELL ($0)"
 
       # Pre-Alpha Logic - Use the project version number and add the short hash
       # to it
       - name: Bump pre-alpha version
         # If triggered by push to a feature branch
         if: |
-          ${{ startsWith(github.ref, 'refs/heads/issue') }}      ||
-          ${{ startsWith(github.ref, 'refs/heads/dependabot/') }} ||
-          ${{ startsWith(github.ref, 'refs/heads/feature/') }}
+          startsWith(github.ref, 'refs/heads/issue') || 
+          startsWith(github.ref, 'refs/heads/dependabot/') || 
+          startsWith(github.ref, 'refs/heads/feature/')
         # At pre-alpha, append git-commit to version, set it into gradle
         # property, read the version out and set to build_service_version
         run: |
-          new_version="${{ env.the_version }}+$(git rev-parse --short HEAD)"
+          the_version=$(echo "${{ env.the_version }}" | sed -e "s/-alpha.*//g")
+          the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
+          new_version="${the_version}-$(git rev-parse --short HEAD)"
           echo "software_version=${new_version}" >> $GITHUB_ENV
+          echo "new_version=${new_version}" >> $GITHUB_ENV
+          echo "Github REF: ${{ github.ref }}"
 
       # Alpha Logic - Use the project version number and add -alpha.1 or bump
       # alpha number
@@ -71,9 +78,11 @@ jobs:
         if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
           if [[ ${VERSION} == *"-alpha"* ]]; then
-            alpha_number=$(echo "${VERSION}" | sed -e s/^.*-alpha.//g)
+            alpha_number=$(echo "${VERSION}" | sed -e "s/^.*-alpha.//g")
+            alpha_number=$(echo "$alpha_number" | sed -e "s/-rc.*//g")
             alpha_number=$((alpha_number+1))
-            the_version=$(echo "$the_version" | sed -e s/-alpha.*//g)
+            the_version=$(echo "$the_version" | sed -e "s/-alpha.*//g")
+            the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
             the_version="${the_version}-alpha.$alpha_number"
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
@@ -82,31 +91,50 @@ jobs:
             echo "software_version=${the_version}" >> $GITHUB_ENV
             echo "the_version=${the_version}" >> $GITHUB_ENV
           fi
+          echo "new_version=${the_version}" >> $GITHUB_ENV
           echo "venue=sit" >> $GITHUB_ENV
+          echo "TARGET_ENV_UPPERCASE=SIT" >> $GITHUB_ENV
 
       # Release Candidate Logic - Remove -alpha* and add -rc.1, or bump the rc
       # number
       - name: Bump rc version
-        # If triggered by push to a release branch
         if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
         env:
           VERSION: ${{ env.the_version }}
-          # True if the version already has a 'rc' pre-release identifier
-#          BUMP_RC: ${{ contains(${env.the_version}, 'rc') }}
+          COMMIT_VERSION: ${{ github.ref }}
         run: |
-          if [[ ${VERSION} == *"-rc"* ]]; then
-            rc_number=$(echo "${VERSION}" | sed -e s/^.*-rc.//g)
-            rc_number=$((alpha_number+1))
-            the_version=$(echo "$the_version" | sed -e s/-rc.*//g)
-            the_version="${the_version}-rc.$rc_number"
-            echo "software_version=${the_version}" >> $GITHUB_ENV
-            echo "the_version=${the_version}" >> $GITHUB_ENV
-          else
-            the_version="${{ env.the_version }}-rc.1"
-            echo "software_version=${the_version}" >> $GITHUB_ENV
-            echo "the_version=${the_version}" >> $GITHUB_ENV
+          commit_version=$COMMIT_VERSION
+          commit_version=$(echo "${commit_version}" |sed -e "s/^.*\///g")
+          commit_version=$(echo "${commit_version}" |sed -e "s/-alpha.*//g")
+          commit_version=$(echo "${commit_version}" |sed -e "s/-rc.*//g")
+          echo "COMMIT VERSION: $commit_version"
+          file_version=${VERSION}
+          file_version=$(echo "${file_version}" |sed -e "s/-alpha.*//g")
+          file_version=$(echo "${file_version}" |sed -e "s/-rc.*//g")
+          echo "FILE VERSION: $file_version"
+          if [[ "$commit_version" != "$file_version" ]]; then
+            echo "Commit version and file version are different, using commit version"
+            VERSION=$commit_version
           fi
+          if [[ ${VERSION} == *"-rc"* ]]; then
+            echo "Bumping up the release candidate number from ${VERSION}"
+            rc_number=$(echo "${VERSION}" | sed -e "s/^.*-rc.//g")
+            rc_number=$(echo "${rc_number}" | sed -e "s/-alpha.*//g")
+            rc_number=$((rc_number+1))
+            the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
+            the_version=$(echo "$the_version" | sed -e "s/-alpha.*//g")
+            VERSION="${the_version}-rc.${rc_number}"
+          else
+            echo "Initializing the first release candidate for ${VERSION}"
+            VERSION=$(echo "${VERSION}" |sed -e "s/-alpha.*//g")
+            VERSION="${VERSION}-rc.1"
+          fi
+          echo "software_version=${VERSION}" >> $GITHUB_ENV
+          echo "the_version=${VERSION}" >> $GITHUB_ENV
+          echo "new_version=${VERSION}" >> $GITHUB_ENV
           echo "venue=uat" >> $GITHUB_ENV
+          echo "TARGET_ENV_UPPERCASE=UAT" >> $GITHUB_ENV
+
 
       # Release Logic
       - name: Release version
@@ -117,19 +145,12 @@ jobs:
         # Remove -rc.* from end of version string
         run: |
           software_version=$(echo "${VERSION}" | sed -e s/-rc.*//g)
+          software_version=$(echo "${software_version}" | sed -e s/-alpha.*//g)
           echo "software_version=$software_version" >> $GITHUB_ENV
+          echo "new_version=$software_version" >> $GITHUB_ENV
           echo "the_version=$software_version" >> $GITHUB_ENV
           echo "venue=ops" >> $GITHUB_ENV
-
-      # NOTE: This step is platform-specific
-      # Update the version number in the application package itself
-      - name: Update version number in the application package
-        run: |
-          ./gradlew setCurrentVersion -Pargs=${{ env.the_version }}
-          ./gradlew currentVersion -q > .temp_version.out
-          new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
-          rm .temp_version.out
-          echo "New Application Version: $new_version"
+          echo "TARGET_ENV_UPPERCASE=OPS" >> $GITHUB_ENV
 
 
       #########################################################################
@@ -138,11 +159,54 @@ jobs:
       - name: Versioning Summary
         run: |
           echo "the_service: ${{ env.the_service }}"
-          echo "the_version: ${{ env.the_version }}"
+          echo "old version : ${{ env.old_version }}"
+          echo "new version : ${{ env.new_version }}"
           echo "the_env: ${{ env.the_env }}"
           echo "software_version: ${{ env.software_version }}"
           echo "GITHUB REF: ${{ github.ref }}"
           echo "VENUE: ${{ env.venue }}"
+          echo "Target Env Uppercase: ${{ env.TARGET_ENV_UPPERCASE }}"
+   
+
+      # NOTE: This step is platform-specific
+      # Update the version number in the application package itself
+      - name: Update version number in the application package
+        run: |
+          ./gradlew setCurrentVersion -Pargs=${{ env.new_version }}
+          ./gradlew currentVersion -q > .temp_version.out
+          new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
+          rm .temp_version.out
+          echo "New Application Version: $new_version"
+
+
+      #########################################################################
+      # Publish new version numbers
+      #########################################################################
+      - name: Commit Version Bump
+        # If building develop, a release branch, or main then we commit the version bump back to the repo
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release')
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git commit -am "/version ${{ env.the_version }}"
+          git push
+
+      - name: Push Tag
+        env:
+          VERSION: ${{ env.the_version }}
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release')
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git tag -a "${VERSION}" -m "Version ${VERSION}"
+          git push origin "${VERSION}"
+
 
       #########################################################################
       # Build
@@ -153,6 +217,11 @@ jobs:
         run: |
           rm -rf dist
           ./gradlew --scan buildArtifact
+          ls -al
+          ls -al dist/
+          ls -al docker/
+          ls -al terraform/
+          ls -al terraform_deploy/
 
 
       #########################################################################
@@ -174,11 +243,19 @@ jobs:
       #       -Dsonar.projectVersion=${{ env.software_version }}
       #       -Dsonar.python.version=3.8,3.9,3.10
 
-      # This step will fail the build if snyk fails
+      # - name: Java Debugging
+      #   run: |
+      #     java --version
+      #     which java
+      #     ls -al /usr/bin/java
+
+
+      # # This step will fail the build if snyk fails
       # - name: Run Snyk as a blocking step
-      #   uses: snyk/actions/python-3.8@master
+      #   uses: snyk/actions/gradle@master
       #   env:
       #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #       JAVA_HOME: /usr/lib/jvm/default-java/
       #   with:
       #     command: test
       #     args: >
@@ -207,72 +284,14 @@ jobs:
       #     junit 'build/test-results/test/TESTS-TestSuites.xml'
 
       #########################################################################
-      # Publish new version numbers
-      #########################################################################
-      - name: Commit Version Bump
-        # If building develop, a release branch, or main then we commit the version bump back to the repo
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main'    ||
-          startsWith(github.ref, 'refs/heads/release')
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git commit -am "/version ${{ env.THE_VERSION }}"
-          git push
-
-      - name: Push Tag
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main'    ||
-          startsWith(github.ref, 'refs/heads/release')
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -a "${{ env.THE_VERSION }}" -m "Version ${{ env.THE_VERSION }}"
-          git push origin "${{ env.THE_VERSION }}"
-
-
-      #########################################################################
       # Publish release to releases
       #########################################################################
-      - name: Archive Release
-        uses: thedoctor0/zip-release@0.7.1
-        with:
-          type: 'zip'
-          filename: '${{ github.repository }}-${{ env.THE_VERSION}}'
-          exclusions: '*.git* /*node_modules/* .editorconfig'
-      - name: Upload Release
+      - name: Upload Release Artifacts
         uses: ncipollo/release-action@v1.12.0
         with:
-          artifacts: "${{ github.repository }}-${{ env.THE_VERSION}}.zip"
+          tag: ${{ env.the_version }}
+          artifacts: "dist/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-
-        #   stage("Upload to Artifactory"){
-        #     when{
-        #         anyOf{
-        #             branch 'develop'
-        #             branch 'master'
-        #             changeRequest target: 'develop'
-        #             changeRequest target: 'master'
-        #             changelog '/jenkins deploy-dev' 
-        #         }
-        #     }
-        #     steps{
-        #         unstash name: 'build-info'
-        #         unstash name: 'artifacts'
-        #         script{
-        #             build_info = readYaml file: 'build-info.yaml'
-        #             the_version = build_info['build_service_version']
-        #         }
-        #         echo "Publish ${the_version} to ${build_info.artifactory}"
-        #         withCredentials([usernamePassword(credentialsId: env.ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_PASSWORD')]){
-        #             sh "ls -la"
-        #             sh "cd dist; pwd; ls -la; curl -u ${ARTIFACTORY_USER}:${ARTIFACTORY_PASSWORD} -X PUT ${build_info.artifactory}/${the_version}/forge-${the_version}.zip -T forge-${the_version}.zip"
-        #             sh "echo = Upload to CAE Artifactory Succeeded =="
-        #         }
-        #     }
-        # }
 
       #########################################################################
       # Build and Publish Docker Container
@@ -303,8 +322,13 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=${{ env.THE_VERSION }}
+            type=semver,pattern={{version}},value=${{ env.the_version }}
             type=raw,value=${{ env.THE_ENV }}
+
+      - name: Show meta outputs
+        run: |
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "labels: ${{ steps.meta.outputs.labels }}"
 
       - name: Build and push Docker image
         if: |
@@ -316,15 +340,38 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: docker/Dockerfile
+          file: ./docker/Dockerfile
           push: true
           pull: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      - name: Upload Docker image to ECR
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release') ||
+          github.event.head_commit.message == '/deploy sit' ||
+          github.event.head_commit.message == '/deploy uat'
+        uses: vitr/actions-build-and-upload-to-ecs@master
+        with:
+          access_key_id: ${{ secrets[format('AWS_ACCESS_KEY_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          secret_access_key: ${{ secrets[format('AWS_SECRET_ACCESS_KEY_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          account_id: ${{ secrets[format('AWS_ACCOUNT_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          repo: podaac/forge
+          region: us-west-2
+          tags: ${{ env.the_version }}
+          create_repo: true
+          dockerfile: ./docker/Dockerfile
+      
+
       #########################################################################
-      # Build and Publish Docker Container
+      # Deploy to AWS via Terraform
       #########################################################################
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 0.13.6
+
       - name: Deploy Terraform
         if: |
           github.ref == 'refs/heads/develop' ||
@@ -332,17 +379,28 @@ jobs:
           startsWith(github.ref, 'refs/heads/release') ||
           github.event.head_commit.message == '/deploy sit' ||
           github.event.head_commit.message == '/deploy uat'
-        working-directory: terraform/
+        working-directory: terraform_deploy/
         env:
           AWS_ACCESS_KEY_ID:       ${{ secrets[format('AWS_ACCESS_KEY_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
           AWS_SECRET_ACCESS_KEY:   ${{ secrets[format('AWS_SECRET_ACCESS_KEY_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          AWS_ACCOUNT_ID:          ${{ secrets[format('AWS_ACCOUNT_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
           AWS_DEFAULT_REGION:      us-west-2
 
-          TF_VAR_hitide_profile_docker_image: "ghcr.io/podaac/hitide-profile:${{ env.DOCKER_METADATA_OUTPUT_VERSION }}"
+          TF_VAR_forge_docker_image: "ghcr.io/podaac/forge:${{ env.DOCKER_METADATA_OUTPUT_VERSION }}"
           TF_VAR_EARTH_DATA_LOGIN_CLIENT_ID: ${{ secrets[format('EARTH_DATA_LOGIN_CLIENT_ID_{0}', env.TARGET_ENV_UPPERCASE)] }}
           TF_VAR_EARTH_DATA_LOGIN_PASSWORD: ${{ secrets[format('EARTH_DATA_LOGIN_PASSWORD_{0}', env.TARGET_ENV_UPPERCASE)] }}
 
         run: |
-          source bin/config.sh ${{ env.THE_ENV }}
-          terraform plan -var-file=tfvars/"${{ env.THE_ENV }}".tfvars -var="app_version=${{ env.THE_VERSION }}" -out="tfplan"
-          terraform apply -auto-approve tfplan          
+          ls -al
+          ls -al bin/
+          which python3
+          python3 --version
+          python3 override.py https://github.com/podaac/forge/releases/download/${{ env.the_version }}/forge-${{ env.the_version }}.zip ${{ secrets[format('AWS_ACCOUNT_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}.dkr.ecr.us-west-2.amazonaws.com/podaac/forge:${{ env.the_version }}
+          ls -al
+          echo "Show override contents"
+          cat override.tf.json
+          echo "End show override contents"
+          terraform --version
+          source bin/config.sh ${{ env.venue }}
+          terraform plan -var-file=tfvars/"${{ env.venue }}".tfvars -var="app_version=${{ env.the_version }}" -out="tfplan"
+          terraform apply -auto-approve tfplan
