@@ -120,15 +120,13 @@ jobs:
             rc_number=$((rc_number+1))
             the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
             the_version=$(echo "$the_version" | sed -e "s/-alpha.*//g")
-            the_version="${the_version}-rc.${rc_number}"
-            echo "software_version=${the_version}" >> $GITHUB_ENV
-            echo "the_version=${the_version}" >> $GITHUB_ENV
+            VERSION="${the_version}-rc.${rc_number}"
           else
             echo "Initializing the first release candidate for ${VERSION}"
             VERSION="${VERSION}-rc.1"
-            echo "software_version=${VERSION}" >> $GITHUB_ENV
-            echo "the_version=${VERSION}" >> $GITHUB_ENV
           fi
+          echo "software_version=${VERSION}" >> $GITHUB_ENV
+          echo "the_version=${VERSION}" >> $GITHUB_ENV
           echo "new_version=${VERSION}" >> $GITHUB_ENV
           echo "venue=uat" >> $GITHUB_ENV
           echo "TARGET_ENV_UPPERCASE=UAT" >> $GITHUB_ENV
