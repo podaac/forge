@@ -149,16 +149,6 @@ jobs:
           echo "TARGET_ENV_UPPERCASE=OPS" >> $GITHUB_ENV
 
 
-      # NOTE: This step is platform-specific
-      # Update the version number in the application package itself
-      - name: Update version number in the application package
-        run: |
-          ./gradlew setCurrentVersion -Pargs=${{ env.new_version }}
-          ./gradlew currentVersion -q > .temp_version.out
-          new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
-          rm .temp_version.out
-          echo "New Application Version: $new_version"
-
       #########################################################################
       # Versioning Summary
       #########################################################################
@@ -172,8 +162,48 @@ jobs:
           echo "GITHUB REF: ${{ github.ref }}"
           echo "VENUE: ${{ env.venue }}"
           echo "Target Env Uppercase: ${{ env.TARGET_ENV_UPPERCASE }}"
-          exit 1
    
+
+      # NOTE: This step is platform-specific
+      # Update the version number in the application package itself
+      - name: Update version number in the application package
+        run: |
+          ./gradlew setCurrentVersion -Pargs=${{ env.new_version }}
+          ./gradlew currentVersion -q > .temp_version.out
+          new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
+          rm .temp_version.out
+          echo "New Application Version: $new_version"
+
+
+      #########################################################################
+      # Publish new version numbers
+      #########################################################################
+      - name: Commit Version Bump
+        # If building develop, a release branch, or main then we commit the version bump back to the repo
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release')
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git commit -am "/version ${{ env.the_version }}"
+          git push
+
+      - name: Push Tag
+        env:
+          VERSION: ${{ env.the_version }}
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release')
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git tag -a "${VERSION}" -m "Version ${VERSION}"
+          git push origin "${VERSION}"
+          exit 1
+
 
       #########################################################################
       # Build
@@ -249,35 +279,6 @@ jobs:
       #     ./gradlew test
       #     ./gradlew mergeJUnitReports
       #     junit 'build/test-results/test/TESTS-TestSuites.xml'
-
-      #########################################################################
-      # Publish new version numbers
-      #########################################################################
-      - name: Commit Version Bump
-        # If building develop, a release branch, or main then we commit the version bump back to the repo
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main'    ||
-          startsWith(github.ref, 'refs/heads/release')
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git commit -am "/version ${{ env.the_version }}"
-          git push
-
-      - name: Push Tag
-        env:
-          VERSION: ${{ env.the_version }}
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main'    ||
-          startsWith(github.ref, 'refs/heads/release')
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -a "${VERSION}" -m "Version ${VERSION}"
-          git push origin "${VERSION}"
-
 
       #########################################################################
       # Publish release to releases
