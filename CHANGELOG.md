@@ -16,12 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
-## [0.7.1]
+## [0.7.5]
 
 ### Added
 ### Changed
-- **Moved to Github.com** -
-  - Now runs in public Github.com Actions
+- **Moved repo to Github.com** -
+  - Repo moved here: https://github.com/podaac/forge
+  - Now builds and deploys in github.com Actions instead of Jenkins
 ### Deprecated
 ### Removed
 ### Fixed
