@@ -126,6 +126,7 @@ jobs:
             VERSION="${the_version}-rc.${rc_number}"
           else
             echo "Initializing the first release candidate for ${VERSION}"
+            VERSION=$(echo "${VERSION}" |sed -e "s/-alpha.*//g")
             VERSION="${VERSION}-rc.1"
           fi
           echo "software_version=${VERSION}" >> $GITHUB_ENV
