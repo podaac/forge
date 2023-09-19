@@ -65,6 +65,7 @@ jobs:
           the_version=$(echo "${{ env.the_version }}" | sed -e "s/-alpha.*//g")
           the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
           new_version="${the_version}-$(git rev-parse --short HEAD)"
+          echo "the_version=${new_version}" >> $GITHUB_ENV
           echo "software_version=${new_version}" >> $GITHUB_ENV
           echo "new_version=${new_version}" >> $GITHUB_ENV
           echo "Github REF: ${{ github.ref }}"
@@ -172,7 +173,7 @@ jobs:
       # Update the version number in the application package itself
       - name: Update version number in the application package
         run: |
-          ./gradlew setCurrentVersion -Pargs=${{ env.new_version }}
+          ./gradlew setCurrentVersion -Pargs=${{ env.the_version }}
           ./gradlew currentVersion -q > .temp_version.out
           new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
           rm .temp_version.out
@@ -289,7 +290,7 @@ jobs:
       - name: Upload Release Artifacts
         uses: ncipollo/release-action@v1.12.0
         with:
-          tag: ${{ env.new_version }}
+          tag: ${{ env.the_version }}
           artifacts: "dist/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -323,7 +324,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=${{ env.new_version }}
+            type=semver,pattern={{version}},value=${{ env.the_version }}
             type=raw,value=${{ env.THE_ENV }}
 
       - name: Show meta outputs
