@@ -293,6 +293,7 @@ jobs:
           tag: ${{ env.the_version }}
           artifacts: "dist/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
+          body: "test"
 
       #########################################################################
       # Build and Publish Docker Container
