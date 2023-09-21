@@ -301,6 +301,7 @@ jobs:
           artifacts: "dist/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: "Version ${{ env.the_version }}"
+          makeLatest: ${{ github.ref == 'refs/heads/main' }}
 
       #########################################################################
       # Build and Publish Docker Container
@@ -334,6 +335,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}},value=${{ env.the_version }}
             type=raw,value=${{ env.THE_ENV }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Show meta outputs
         run: |
