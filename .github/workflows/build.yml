@@ -334,7 +334,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}},value=${{ env.the_version }}
-            type=raw,value=${{ env.THE_ENV }}
+            type=raw,value=${{ env.TARGET_ENV_UPPERCASE }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Show meta outputs
