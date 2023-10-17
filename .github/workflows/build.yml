@@ -65,6 +65,7 @@ jobs:
           the_version=$(echo "${{ env.the_version }}" | sed -e "s/-alpha.*//g")
           the_version=$(echo "$the_version" | sed -e "s/-rc.*//g")
           new_version="${the_version}-$(git rev-parse --short HEAD)"
+          echo "the_version=${new_version}" >> $GITHUB_ENV
           echo "software_version=${new_version}" >> $GITHUB_ENV
           echo "new_version=${new_version}" >> $GITHUB_ENV
           echo "Github REF: ${{ github.ref }}"
@@ -172,7 +173,7 @@ jobs:
       # Update the version number in the application package itself
       - name: Update version number in the application package
         run: |
-          ./gradlew setCurrentVersion -Pargs=${{ env.new_version }}
+          ./gradlew setCurrentVersion -Pargs=${{ env.the_version }}
           ./gradlew currentVersion -q > .temp_version.out
           new_version=$(cat .temp_version.out |grep -v Downloading |grep -v '%')
           rm .temp_version.out
@@ -287,11 +288,21 @@ jobs:
       # Publish release to releases
       #########################################################################
       - name: Upload Release Artifacts
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release') ||
+          github.event.head_commit.message == '/deploy sit' ||
+          github.event.head_commit.message == '/deploy uat' ||
+          github.event.head_commit.message == '/deploy sandbox'
         uses: ncipollo/release-action@v1.12.0
         with:
           tag: ${{ env.the_version }}
           artifacts: "dist/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
+          body: "Version ${{ env.the_version }}"
+          makeLatest: "${{ github.ref == 'refs/heads/main' }}"
+          prerelease: "${{ github.ref != 'refs/heads/main' }}"
 
       #########################################################################
       # Build and Publish Docker Container
@@ -307,7 +318,8 @@ jobs:
       - name: Deploy Env Override
         if: |
           github.event.head_commit.message == '/deploy sit' ||
-          github.event.head_commit.message == '/deploy uat'
+          github.event.head_commit.message == '/deploy uat' ||
+          github.event.head_commit.message == '/deploy sandbox'
         run: |
           message="${{ github.event.head_commit.message }}"
           trimmed_message=${message:1}  # Remove leading slash
@@ -316,14 +328,25 @@ jobs:
           echo "THE_ENV=${override_env}" >> $GITHUB_ENV
           echo "TARGET_ENV_UPPERCASE=${override_env_upper}" >> $GITHUB_ENV
 
+
+      - name: Lower Case Target Env
+        run: |
+          original_env_value="${TARGET_ENV_UPPERCASE}"
+          lowercase_value=$(echo "${original_env_value}" | tr '[:upper:]' '[:lower:]')
+          echo "TARGET_ENV_LOWERCASE=${lowercase_value}" >> $GITHUB_ENV
+
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=${{ github.ref == 'refs/heads/main' }}          
           tags: |
             type=semver,pattern={{version}},value=${{ env.the_version }}
-            type=raw,value=${{ env.THE_ENV }}
+            type=raw,value=${{ env.TARGET_ENV_LOWERCASE }}
+
 
       - name: Show meta outputs
         run: |
@@ -336,7 +359,8 @@ jobs:
           github.ref == 'refs/heads/main'    ||
           startsWith(github.ref, 'refs/heads/release') ||
           github.event.head_commit.message == '/deploy sit' ||
-          github.event.head_commit.message == '/deploy uat'
+          github.event.head_commit.message == '/deploy uat' ||
+          github.event.head_commit.message == '/deploy sandbox'
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -346,7 +370,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Upload Docker image to ECR
+      - name: Upload Docker image to Service ECR
         if: |
           github.ref == 'refs/heads/develop' ||
           github.ref == 'refs/heads/main'    ||
@@ -364,6 +388,25 @@ jobs:
           create_repo: true
           dockerfile: ./docker/Dockerfile
       
+      - name: Upload Docker image to Cumulus ECR
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main'    ||
+          startsWith(github.ref, 'refs/heads/release') ||
+          github.event.head_commit.message == '/deploy sit' ||
+          github.event.head_commit.message == '/deploy uat' ||
+          github.event.head_commit.message == '/deploy sandbox'
+        uses: vitr/actions-build-and-upload-to-ecs@master
+        with:
+          access_key_id: ${{ secrets[format('AWS_ACCESS_KEY_ID_CUMULUS_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          secret_access_key: ${{ secrets[format('AWS_SECRET_ACCESS_KEY_CUMULUS_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          account_id: ${{ secrets[format('AWS_ACCOUNT_ID_CUMULUS_{0}', env.TARGET_ENV_UPPERCASE)] }}
+          repo: podaac/forge
+          region: us-west-2
+          tags: ${{ env.the_version }}
+          create_repo: true
+          dockerfile: ./docker/Dockerfile
+
 
       #########################################################################
       # Deploy to AWS via Terraform
