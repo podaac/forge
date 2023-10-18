@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.8.0]
+
+### Added
+- **Actions updates**
+  - Updated Github Actions to tag releases properly and deploy to Cumulus
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+
 ## [0.7.5]
 
 ### Added
