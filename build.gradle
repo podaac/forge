@@ -1,8 +1,5 @@
 buildscript {
     repositories {
-        //ivy {
-        //    url 'https://cae-artifactory.jpl.nasa.gov/artifactory/plugins-release'
-        //}
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -28,17 +25,14 @@ allprojects {
 
 repositories {
     maven { url 'https://repo.osgeo.org/repository/release/' }
-    //maven { url 'https://cae-artifactory.jpl.nasa.gov/artifactory/maven-libs-release-local' }
-    //maven { url 'https://cae-artifactory.jpl.nasa.gov/artifactory/apache-maven-remote' }
-    //maven { url 'https://cae-artifactory.jpl.nasa.gov/artifactory/clojars-remote' }
     maven { url 'https://clojars.org/repo/'}
     maven { url "https://jitpack.io" }
     mavenCentral()
 }
 
 group = 'gov.nasa.podaac'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 
 configurations {
     developmentOnly
@@ -48,22 +42,6 @@ configurations {
     }
 }
 
-/*
-artifactory {
-    contextUrl = "https://cae-artifactory.jpl.nasa.gov/artifactory"
-    //The base Artifactory URL if not overridden by the publisher/resolver
-    publish {
-        repository {
-            repoKey = 'libs-release-local'
-            maven = false
-            ivy {
-                ivyLayout = '[organization]/[module]/[revision]/[module]-[revision](-[classifier]).pom'
-                artifactLayout = '[organization]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]'
-                mavenCompatible = true
-            }
-        }
-    }
-}*/
 
 dependencies {
     compile group: 'com.vividsolutions', name: 'jts', version: '1.13'
@@ -330,13 +308,24 @@ shadowJar {
    archiveBaseName.set('shadow')
    archiveClassifier.set('')
    archiveVersion.set('')
-}
 
-jar {
     manifest {
         attributes 'Main-Class': 'ActivityHandler'
     }
+
 }
+/*
+cliForge{
+    // Second Shadow JAR
+   archiveBaseName.set('shadow')
+   archiveClassifier.set('')
+   archiveVersion.set('')
+
+    manifest {
+        attributes 'Main-Class': 'ActivityHandler'
+    }
+}*/
+
 
 buildZip.dependsOn build
 buildArtifact.dependsOn buildLambda, copyTFFiles, cleanDist
