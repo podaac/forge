@@ -1,7 +1,7 @@
-FROM adoptopenjdk/openjdk11
+FROM adoptopenjdk/openjdk11:alpine
 
 RUN apk add gradle
-RUN apk add python3==3.6.9-r3
+#RUN apk add python3==3.6.9-r3
 
 #RUN adduser dockeruser --disabled-password
 
