@@ -1,4 +1,5 @@
-FROM adoptopenjdk/openjdk11:alpine
+#FROM adoptopenjdk/openjdk11:alpine
+FROM amazoncorretto:11-alpine-jdk
 
 RUN apk add gradle
 #RUN apk add python3==3.6.9-r3
