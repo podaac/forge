@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-alpine
+FROM openjdk:11
 
 RUN apk add gradle
 RUN apk add python3==3.6.9-r3
