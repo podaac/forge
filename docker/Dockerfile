@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM adoptopenjdk/openjdk11
 
 RUN apk add gradle
 RUN apk add python3==3.6.9-r3
