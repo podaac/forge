@@ -1,17 +1,26 @@
 #FROM adoptopenjdk/openjdk11:alpine
-FROM amazoncorretto:11-alpine-jdk
+#FROM amazoncorretto:11-alpine-jdk
+FROM amazoncorretto:11
 
 #RUN apk update
 #RUN apk add --upgrade apk-tools
 #RUN apk add gradle
 
-RUN apk add wget
-RUN apk add unzip
+#RUN apk add wget
+#RUN apk add unzip
+
+RUN yum install -y wget
+RUN yum install -y unzip
+RUN yum install -y /usr/sbin/adduser
+
 #RUN apk add python3==3.6.9-r3
 
 #RUN adduser dockeruser --disabled-password
 
-RUN addgroup -S dockergroup && adduser -S dockeruser -G dockergroup
+#RUN addgroup -S dockergroup && adduser -S dockeruser -G dockergroup
+
+RUN groupadd dockergroup
+RUN useradd -m -g dockergroup dockeruser
 
 WORKDIR /home/dockeruser
 COPY . /home/dockeruser
