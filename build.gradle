@@ -14,7 +14,7 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
-    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
 allprojects {
@@ -307,10 +307,17 @@ shadowJar {
    archiveBaseName.set('shadow')
    archiveClassifier.set('')
    archiveVersion.set('')
+   mergeServiceFiles()
+
 
     manifest {
-        attributes 'Main-Class': 'ActivityHandler'
+        attributes 'Multi-Release': 'true',
+                   'Main-Class': 'ActivityHandler'
     }
+    /*
+    manifest {
+        attributes 'Main-Class': 'ActivityHandler'
+    }*/
 
 }
 /*

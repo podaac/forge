@@ -1,6 +1,7 @@
 #FROM adoptopenjdk/openjdk11:alpine
 #FROM amazoncorretto:11-alpine-jdk
 FROM amazoncorretto:11
+#FROM public.ecr.aws/lambda/java:11
 
 #RUN apk update
 #RUN apk add --upgrade apk-tools
@@ -9,10 +10,12 @@ FROM amazoncorretto:11
 #RUN apk add wget
 #RUN apk add unzip
 
+RUN yum -y update
 RUN yum install -y wget
 RUN yum install -y unzip
 RUN yum install -y /usr/sbin/adduser
-
+#RUN yum install -y shadow-utils
+#RUN yum install -y passwd
 #RUN apk add python3==3.6.9-r3
 
 #RUN adduser dockeruser --disabled-password
@@ -36,9 +39,9 @@ ENV PATH="/home/dockeruser/gradle-6.3/bin:${PATH}"
 # Display Gradle version to verify the installation
 RUN gradle --version
 
-RUN chown dockeruser:dockergroup -R /home/dockeruser
+#RUN chown dockeruser:dockergroup -R /home/dockeruser
 
-USER dockeruser
+#USER dockeruser
 
 RUN ./gradlew shadowJar
 
