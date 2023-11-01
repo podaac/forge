@@ -42,7 +42,6 @@ configurations {
     }
 }
 
-
 dependencies {
     compile group: 'com.vividsolutions', name: 'jts', version: '1.13'
     compile group: 'gov.nasa.earthdata', name: 'cumulus-message-adapter', version: '2.0.0'
@@ -309,29 +308,11 @@ shadowJar {
    archiveVersion.set('')
    mergeServiceFiles()
 
-
     manifest {
         attributes 'Multi-Release': 'true',
                    'Main-Class': 'ActivityHandler'
     }
-    /*
-    manifest {
-        attributes 'Main-Class': 'ActivityHandler'
-    }*/
-
 }
-/*
-cliForge{
-    // Second Shadow JAR
-   archiveBaseName.set('shadow')
-   archiveClassifier.set('')
-   archiveVersion.set('')
-
-    manifest {
-        attributes 'Main-Class': 'ActivityHandler'
-    }
-}*/
-
 
 buildZip.dependsOn build
 buildArtifact.dependsOn buildLambda, copyTFFiles, cleanDist
