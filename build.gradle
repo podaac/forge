@@ -303,10 +303,10 @@ task setCurrentVersion(){
 
 // Output to build/libs/shadow.jar
 shadowJar {
-   archiveBaseName.set('shadow')
-   archiveClassifier.set('')
-   archiveVersion.set('')
-   mergeServiceFiles()
+    archiveBaseName.set('footprint')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    mergeServiceFiles()
 
     manifest {
         attributes 'Multi-Release': 'true',

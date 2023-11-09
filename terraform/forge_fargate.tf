@@ -21,7 +21,7 @@ module "forge_fargate" {
   command = [
     "java",
     "-jar",
-    "/home/dockeruser/build/libs/shadow.jar",
+    "/home/dockeruser/build/libs/footprint.jar",
     aws_sfn_activity.forge_ecs_task.id
   ]
 

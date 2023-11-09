@@ -215,12 +215,17 @@ jobs:
       # NOTE: This step is platform-specific
       # These are gradle-specific steps for installing the application
       - name: Build Software
+        env:
+          VERSION: ${{ env.the_version }}
         run: |
           rm -rf dist
           ./gradlew --scan buildArtifact
+          ./gradlew shadowJar
+          mv build/libs/*.jar build/libs/footprint_${VERSION}.jar
           ls -al
           ls -al dist/
           ls -al docker/
+          ls -al builds/libs
           ls -al terraform/
           ls -al terraform_deploy/
 
@@ -298,7 +303,7 @@ jobs:
         uses: ncipollo/release-action@v1.12.0
         with:
           tag: ${{ env.the_version }}
-          artifacts: "dist/*.zip"
+          artifacts: "dist/*.zip, builds/libs/*.jar"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: "Version ${{ env.the_version }}"
           makeLatest: "${{ github.ref == 'refs/heads/main' }}"
