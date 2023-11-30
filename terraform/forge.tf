@@ -5,7 +5,7 @@ resource "aws_lambda_function" "forge_task" {
   source_code_hash = filebase64sha256("${path.module}/forge-lambda.zip")
   handler       = "gov.nasa.podaac.forge.FootprintHandler::handleRequestStreams"
   role          = var.lambda_role
-  runtime       = "java8"
+  runtime       = "java11"
   timeout       = var.timeout
   memory_size   = var.memory_size
 
