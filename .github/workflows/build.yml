@@ -27,7 +27,7 @@ jobs:
       # Checks out this repository and sets up the build/test environment with 
       # gradle
       - name: Checkout project sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
