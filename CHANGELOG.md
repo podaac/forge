@@ -16,6 +16,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.9.0]
+
+### Added
+- **JAVA 11**
+  - Update forge to java 11
+- **Forge CLI**
+  - Added a cli command to run forge with jar file
+- **Github actions update**
+  - Update various github actions commands
+- **Forge Update**
+  - Updated java libraries with security holes, and update libraries for cumulus 16
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+
 ## [0.8.0]
 
 ### Added

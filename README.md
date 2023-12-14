@@ -42,6 +42,20 @@ Then, to build the project simply run:
 ./gradlew buildZip
 ```
 
+Build local jar to run footprint
+```shell script
+./gradlew shadowJar
+```
+
+You need java 11 to run the jar locally
+```
+java -cp build/libs/footprint.jar FootprintCLI <granule> <collection config>
+```
+
+example:
+```
+java -cp build/libs/footprint.jar FootprintCLI test.nc test.cfg
+```
 
 
 ```shell script
