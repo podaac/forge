@@ -94,6 +94,12 @@ variable "profile" {
 
 variable image{
   description = "ECR image arn"
+  default = ""
+  type = string
+}
+
+variable lambda_container_image_uri{
+  description = "public image url"
   type = string
 }
 
