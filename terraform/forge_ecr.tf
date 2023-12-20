@@ -9,7 +9,7 @@ locals {
 
 resource aws_ecr_repository "lambda-image-repo" {
   name = local.ecr_image_name
-  tags = var.tags
+  tags = var.default_tags
 }
 
 
