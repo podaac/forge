@@ -53,7 +53,7 @@ jobs:
 
       - name: Check for changes in CHANGELOG.md
         run: |
-          CHANGES=$(git diff --name-only ${{ github.ref_name }}..origin/develop | grep 'CHANGELOG.md')
+          CHANGES=$(git diff --name-only ${{ github.ref_name }} origin/develop | grep 'CHANGELOG.md')
           if [ -n "$CHANGES" ]; then
             echo "Changelog has been updated."
             exit 0
