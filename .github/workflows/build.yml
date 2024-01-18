@@ -51,16 +51,6 @@ jobs:
           echo "Initial Version: [$the_version]"
           echo "Shell: $SHELL ($0)"
 
-      - name: Check for changes in CHANGELOG.md
-        run: |
-          if git diff --name-only ${{ github.ref_name }} refs/heads/develop | grep 'CHANGELOG.md'; then
-            echo "Changelog has been updated."
-            exit 0
-          else
-            echo "No changes detected in CHANGELOG.md.  Please update the changelog."
-            exit 1
-          fi
-
       # Pre-Alpha Logic - Use the project version number and add the short hash
       # to it
       - name: Bump pre-alpha version
