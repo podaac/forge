@@ -21,7 +21,7 @@ class FootprintCLI {
         String granuleFile = args[0];
         String configFile = args[1];
         String footprint = "";
-        String filePath = granuleFile + ".fp";
+        String filePath = granuleFile + ".footprint.wkt";
 
         try {
             System.out.println("Processing File");
