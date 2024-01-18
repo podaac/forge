@@ -53,11 +53,11 @@ jobs:
 
       - name: Check for changes in CHANGELOG.md
         run: |
-          if git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }} | grep 'CHANGELOG\.md'; then
+          if git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }} | grep 'CHANGELOG.md'; then
             echo "Changelog has been updated."
             exit 0
           else
-            echo "No changes detected in CHANGELOG.md. Please update the changelog."
+            echo "No changes detected in CHANGELOG.md.  Please update the changelog."
             exit 1
           fi
 
