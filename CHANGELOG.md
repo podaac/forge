@@ -9,14 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **JAVA 11**
-  - Update forge to java 11
-- **Forge CLI**
-  - Added a cli command to run forge with jar file
-- **Github actions update**
-  - Update various github actions commands
-- **Forge Update**
-  - Updated java libraries with security holes, and update libraries for cumulus 16
+ - **Terraform Upload Image**
+   - Added terraform code to upload ecr docker images
+ - **Add Forge Cli output file**
+   - Forge cli now output a footprint file
 ### Changed
 ### Deprecated
 ### Removed

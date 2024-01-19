@@ -26,5 +26,5 @@ module "forge_module" {
     fargate_cpu = 256
     fargate_iam_role = aws_iam_role.fargate_execution.arn
     ecs_cluster_name = aws_ecs_cluster.main.name
-    image = "source will be override by override.py"
+    lambda_container_image_uri = "source will be override by override.py"
 }
