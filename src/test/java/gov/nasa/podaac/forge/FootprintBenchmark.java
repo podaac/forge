@@ -64,7 +64,7 @@ public class FootprintBenchmark {
         String configFileName = "PODAAC-CYGNS-L2X21.cfg";
         runFootprint(fileDirectory, inputFileName, configFileName);
     }
-
+/*
     public static void main(String[] args) throws Exception {
         Options opt = new OptionsBuilder()
                 .include(".*" + FootprintBenchmark.class.getSimpleName() + ".*")
@@ -72,4 +72,17 @@ public class FootprintBenchmark {
                 .build();
         new Runner(opt).run();
     }
+*/
+    
+
+        public static void main (String[] args) throws Exception {
+            String filePath = "/Users/jwood/Documents/Projects/PO.DAAC/Projects/HiTIDE/tig-github.com/conf/ASCATA_ESDR_L2_WIND_STRESS_V1.1/measures_esdr_as_metopa_l2_wind_stress_01042_v1.1_s20070101-001022-e20070101-015143.nc";
+            String configFilePath = "/Users/jwood/Documents/Projects/PO.DAAC/Projects/HiTIDE/tig-github.com/conf/ASCATA_ESDR_L2_WIND_STRESS_V1.1/ASCATA_ESDR_L2_WIND_STRESS_V1.1.cfg";
+
+            Footprinter footprinter = new Footprinter(filePath, configFilePath);
+            Map<String, String> footprint = footprinter.footprint();
+            System.out.println(footprint);
+        }
+
+
 }
