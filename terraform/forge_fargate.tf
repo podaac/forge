@@ -36,7 +36,7 @@ module "forge_fargate" {
     "FOOTPRINT_OUTPUT_DIR": var.footprint_output_dir
   }
 
-  image = var.image
+  image = "${aws_ecr_repository.lambda-image-repo.repository_url}:${local.ecr_image_tag}"
   ecs_cluster_arn = var.cluster_arn
   subnet_ids = var.subnet_ids
   scale_dimensions =  var.scale_dimensions != null ? var.scale_dimensions : {"ServiceName" = "${var.prefix}-${var.app_name}-fargate-service","ClusterName" = var.ecs_cluster_name}

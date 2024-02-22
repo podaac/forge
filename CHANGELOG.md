@@ -16,6 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.10.0]
+
+### Added
+ - **Terraform Upload Image**
+   - Added terraform code to upload ecr docker images
+ - **Add Forge Cli output file**
+   - Forge cli now output a footprint file
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+
 ## [0.9.0]
 
 ### Added
