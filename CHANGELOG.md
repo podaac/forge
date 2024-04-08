@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Terraform Fix Upload Images **
+  - update way we are deploying 
 ### Changed
 ### Deprecated
 ### Removed
