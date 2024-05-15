@@ -9,10 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+
+## [0.11.0]
+
+### Added
 - **Terraform Fix Upload Images **
-  - update way we are deploying 
-- ** Update Aws Provider
-  - update terraform aws provider to allow for any version greater than 3.0
+  - Update deployment 
+- ** Update AWS Provider
+  - Update terraform aws provider to allow for any version greater than 3.0
 ### Changed
 ### Deprecated
 ### Removed
