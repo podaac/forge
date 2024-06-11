@@ -64,6 +64,7 @@ public class FootprintBenchmark {
         String configFileName = "PODAAC-CYGNS-L2X21.cfg";
         runFootprint(fileDirectory, inputFileName, configFileName);
     }
+
     public static void main(String[] args) throws Exception {
         Options opt = new OptionsBuilder()
                 .include(".*" + FootprintBenchmark.class.getSimpleName() + ".*")
