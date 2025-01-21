@@ -37,6 +37,8 @@ jobs:
           
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 6.3
 
       #########################################################################
       # Versioning (featuring weird gradle output work-arounds)
@@ -271,17 +273,16 @@ jobs:
       #         --fail-on=all
 
       - name: Run Snyk as a blocking step
-       uses: snyk/actions/gradle@master
-       env:
-           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-           JAVA_HOME: /usr/lib/jvm/default-java/
-       with:
-         command: test
-         args:
-             --org=${{ secrets.SNYK_ORG_ID }}
-             --project-name=${{ github.repository }}
-             --severity-threshold=high
-             --fail-on=all
+         uses: snyk/actions/gradle@master
+         env:
+             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+             JAVA_HOME: /usr/lib/jvm/default-java/
+         with:
+           args:
+               --org=${{ secrets.SNYK_ORG_ID }}
+               --project-name=${{ github.repository }}
+               --severity-threshold=high
+               --fail-on=all
 
       - name: Test and coverage
         run: |
