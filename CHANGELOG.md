@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 ### Changed
+- ** Check lon and lat data **
+  - Made function to check lon and lat data are valid if not then it should fail quickly.
 ### Deprecated
 ### Removed
 ### Fixed

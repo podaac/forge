@@ -99,7 +99,40 @@ public class Footprinter {
         
         return ranges;
     }
-    
+
+    /**
+     * Function to check to see if all the lon and lats in netcdf file are all invalid.
+     *
+     * @return Boolean, true if all lon lat are not valid, false if there are some valid lon lats
+     */
+    public static boolean areAllLonLatInvalid(float[] lonVar, float[] latVar) {
+        if (lonVar == null || latVar == null) {
+            throw new IllegalArgumentException("Longitude or Latitude array cannot be null.");
+        }
+
+        // Define the validity ranges for longitude and latitude
+        boolean allInvalidLon = true;
+        for (float lon : lonVar) {
+            // Check if longitude is valid
+            if (!Float.isNaN(lon) && lon >= -180 && lon <= 180) {
+                allInvalidLon = false;
+                break;
+            }
+        }
+
+        boolean allInvalidLat = true;
+        for (float lat : latVar) {
+            // Check if latitude is valid
+            if (!Float.isNaN(lat) && lat >= -90 && lat <= 90) {
+                allInvalidLat = false;
+                break;
+            }
+        }
+
+        // Return true only if both longitude and latitude are entirely invalid
+        return allInvalidLon && allInvalidLat;
+    }
+
     /**
      * Do the work of footprinting the NetCDF4 file.
      *
@@ -153,7 +186,15 @@ public class Footprinter {
             Map<String, Double> latAttMap = getAttributes(latVariable);
             Map<String, Double> lonAttMap = getAttributes(lonVariable);
             int[] shapes = latVariable.getShape();
+
+            float[] lonValues = (float[]) lonVariable.read().copyTo1DJavaArray();
+            float[] latValues = (float[]) latVariable.read().copyTo1DJavaArray();
+            boolean isInvalidLonLat = areAllLonLatInvalid(lonValues, latValues);
             
+            if(isInvalidLonLat){
+                throw new FootprintException("The granule trying to footprint doesn't have any valid longitude and latitude data.");
+            }
+
             String strategyName = footprintStrategyType.getStrategyName();
             if(strategyName == "swot_linestring"){
                 rangeList = buildRanges(footprint.getSide1(), shapes);
