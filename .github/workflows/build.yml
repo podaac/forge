@@ -273,10 +273,9 @@ jobs:
       #         --fail-on=all
 
       - name: Run Snyk as a blocking step
-        uses: snyk/actions/gradle@master
+        uses: snyk/actions/gradle-jdk11@master
         env:
             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-            JAVA_HOME: ${{ env.JAVA_HOME }}
         with:
           args:
               --org=${{ secrets.SNYK_ORG_ID }}
