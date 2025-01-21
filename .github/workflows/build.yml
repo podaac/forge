@@ -278,13 +278,13 @@ jobs:
       - name: Run Snyk as a blocking step
         uses: snyk/actions/gradle@master
         env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args:
-              --org=${{ secrets.SNYK_ORG_ID }}
-              --project-name=${{ github.repository }}
-              --severity-threshold=high
-              --fail-on=all
+          args: >
+            --org=${{ secrets.SNYK_ORG_ID }}
+            --project-name=${{ github.repository }}
+            --severity-threshold=high
+            --fail-on=all
 
       - name: Test and coverage
         run: |
