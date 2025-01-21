@@ -264,37 +264,26 @@ jobs:
 
 
       # # This step will fail the build if snyk fails
-      # - name: Run Snyk as a blocking step
-      #   uses: snyk/actions/gradle@master
-      #   env:
-      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #       JAVA_HOME: /usr/lib/jvm/default-java/
-      #   with:
-      #     command: test
-      #     args: >
-      #         --org=${{ secrets.SNYK_ORG_ID }}
-      #         --project-name=${{ github.repository }}
-      #         --severity-threshold=high
-      #         --fail-on=all
-
-      # # This step will send the results of snyk to the snyk servers
-      # - name: Run Snyk on Python
-      #   uses: snyk/actions/python-3.8@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     command: monitor
-      #     args: >
-      #       --org=${{ secrets.SNYK_ORG_ID }}
-      #       --project-name=${{ github.repository }}
+       - name: Run Snyk as a blocking step
+         uses: snyk/actions/gradle@master
+         env:
+             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+             JAVA_HOME: /usr/lib/jvm/default-java/
+         with:
+           command: test
+           args: >
+               --org=${{ secrets.SNYK_ORG_ID }}
+               --project-name=${{ github.repository }}
+               --severity-threshold=high
+               --fail-on=all
 
       # Lastly run the tests bundled with the repo
-      # - name: Test and coverage
-      #   run: |
-      #     gradle wrapper --gradle-version 6.3
-      #     ./gradlew test
-      #     ./gradlew mergeJUnitReports
-      #     junit 'build/test-results/test/TESTS-TestSuites.xml'
+       - name: Test and coverage
+         run: |
+           gradle wrapper --gradle-version 6.3
+           ./gradlew test
+           ./gradlew mergeJUnitReports
+           junit 'build/test-results/test/TESTS-TestSuites.xml'
 
       #########################################################################
       # Publish release to releases
