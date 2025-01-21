@@ -241,7 +241,6 @@ jobs:
           gradle wrapper --gradle-version 6.3
           ./gradlew test
           ./gradlew mergeJUnitReports
-          junit 'build/test-results/test/TESTS-TestSuites.xml'
 
       #########################################################################
       # Publish release to releases
