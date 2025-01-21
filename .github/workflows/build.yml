@@ -276,7 +276,7 @@ jobs:
         uses: snyk/actions/gradle@master
         env:
             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-            JAVA_HOME: /usr/lib/jvm/default-java/
+            JAVA_HOME: $JAVA_HOME
         with:
           args:
               --org=${{ secrets.SNYK_ORG_ID }}
