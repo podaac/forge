@@ -249,7 +249,7 @@ task buildZip(type: Zip) {
     into('lib') {
         from configurations.runtime
     }
-    archiveFileName="forge-${getVersionName()}.zip"
+    archiveName "forge-${getVersionName()}.zip"
 }
 
 task getServiceName() {
@@ -287,9 +287,9 @@ task buildLambda(type: Zip) {
     from compileJava
     from processResources
     into('lib') {
-        from configurations.runtime
+        from configurations.runtimeClasspath
     }
-    archiveFileName="forge-lambda.zip"
+    archiveName "forge-lambda.zip"
 }
 
 task currentVersion() {
