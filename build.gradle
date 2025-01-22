@@ -72,7 +72,7 @@ dependencies {
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.17.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
-    implementation group: 'edu.ucar', name: 'cdm-core', version: '5.4.2'
+    implementation group: 'edu.ucar', name: 'cdm-core', version: '5.7.0'
 
     implementation group: 'org.geotools', name: 'gt-shapefile', version: '32.1'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
