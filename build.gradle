@@ -53,23 +53,23 @@ dependencies {
     implementation group: 'com.vividsolutions', name: 'jts', version: '1.13'
     implementation group: 'gov.nasa.earthdata', name: 'cumulus-message-adapter', version: '2.0.0'
 
-    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.740'
-    implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.1'
-    implementation group: 'com.amazonaws', name: 'aws-java-sdk-stepfunctions', version: '1.12.363'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.780'
+    implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.3'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-stepfunctions', version: '1.12.780'
 
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.11.0'
 
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
 
-    implementation group: 'org.json', name: 'json', version: '20231013'
+    implementation group: 'org.json', name: 'json', version: '20250107'
 
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.17.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
     implementation group: 'edu.ucar', name: 'cdm-core', version: '5.7.0'
 
-    implementation group: 'org.geotools', name: 'gt-shapefile', version: '29.2'
+    implementation group: 'org.geotools', name: 'gt-shapefile', version: '32.1'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.17.2'
@@ -77,16 +77,16 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.2'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.15.2'
 
-    testImplementation 'org.openjdk.jmh:jmh-core:1.26'
+    testImplementation 'org.openjdk.jmh:jmh-core:1.26'    // Can't update
     testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.26'
 
-    antJUnit 'org.apache.ant:ant-junit:1.10.11'
-    implementation group: "com.github.everit-org.json-schema", name: "org.everit.json.schema", version: "1.14.1"
-    implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
+    antJUnit 'org.apache.ant:ant-junit:1.10.15'
+    implementation group: "com.github.everit-org.json-schema", name: "org.everit.json.schema", version: "1.14.4"
+    implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'  // Can't update
 
     implementation group: 'com.beust', name: 'jcommander', version: '1.82'
     implementation group: 'org.jdom', name: 'jdom2', version: '2.0.6.1'
@@ -249,7 +249,7 @@ task buildZip(type: Zip) {
     into('lib') {
         from configurations.runtime
     }
-    archiveName "forge-${getVersionName()}.zip"
+    archiveFileName="forge-${getVersionName()}.zip"
 }
 
 task getServiceName() {
@@ -289,7 +289,7 @@ task buildLambda(type: Zip) {
     into('lib') {
         from configurations.runtimeClasspath
     }
-    archiveName "forge-lambda.zip"
+    archiveFileName="forge-lambda.zip"
 }
 
 task currentVersion() {

@@ -228,7 +228,7 @@ jobs:
           VERSION: ${{ env.the_version }}
         run: |
           rm -rf dist
-          ./gradlew --scan buildArtifact
+          ./gradlew buildArtifact
           ./gradlew shadowJar
           mv build/libs/*.jar build/libs/footprint_${VERSION}.jar
 
