@@ -12,12 +12,12 @@ WORKDIR /home/dockeruser
 COPY . /home/dockeruser
 
 # Download and install Gradle
-RUN wget https://services.gradle.org/distributions/gradle-6.3-bin.zip && \
-    unzip gradle-6.3-bin.zip && \
-    rm gradle-6.3-bin.zip
+RUN wget https://services.gradle.org/distributions/gradle-7.6.4-bin.zip && \
+    unzip gradle-7.6.4-bin.zip && \
+    rm gradle-7.6.4-bin.zip
 
 # Add Gradle binaries to the PATH
-ENV PATH="/home/dockeruser/gradle-6.3/bin:${PATH}"
+ENV PATH="/home/dockeruser/gradle-7.6.4/bin:${PATH}"
 
 # Display Gradle version to verify the installation
 RUN gradle --version
@@ -28,7 +28,7 @@ USER dockeruser
 
 RUN ./gradlew shadowJar
 
-RUN wget https://github.com/nasa/cumulus-message-adapter/releases/download/v2.0.3/cumulus-message-adapter.zip
+RUN wget https://github.com/nasa/cumulus-message-adapter/releases/download/v2.0.4/cumulus-message-adapter.zip
 RUN mkdir cumulus-message-adapter
 RUN unzip -d cumulus-message-adapter cumulus-message-adapter.zip
 

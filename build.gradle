@@ -14,8 +14,8 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
-    id "com.github.johnrengelman.shadow" version "7.0.0"
-    id 'com.github.ben-manes.versions' version '0.36.0'
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
 allprojects {
@@ -40,6 +40,11 @@ configurations {
     antJUnit
     runtimeClasspath {
         extendsFrom developmentOnly
+    }
+    runtimeOnlyResolvable {
+        canBeResolved = true
+        canBeConsumed = false
+        extendsFrom runtimeOnly
     }
 }
 
@@ -67,7 +72,7 @@ dependencies {
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.17.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
-    implementation group: 'edu.ucar', name: 'cdm-core', version: '5.7.0'
+    implementation group: 'edu.ucar', name: 'cdm-core', version: '5.4.2'
 
     implementation group: 'org.geotools', name: 'gt-shapefile', version: '32.1'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
@@ -102,9 +107,15 @@ test {
 jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
     reports {
-        xml.enabled true
-        html.enabled true
-        csv.enabled true
+        xml {
+            required.set(true)
+        }
+        html {
+            required.set(true)
+        }
+        csv {
+            required.set(true)
+        }
     }
 }
 
@@ -247,7 +258,7 @@ task buildZip(type: Zip) {
     from compileJava
     from processResources
     into('lib') {
-        from configurations.runtime
+        from configurations.runtimeOnlyResolvable
     }
     archiveFileName="forge-${getVersionName()}.zip"
 }
