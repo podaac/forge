@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 ### Fixed
 ### Security
+- **Upgraded dependency libraries and fixed snyk vulnerabilities**
 
 
 ## [0.11.0]
