@@ -20,8 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 ### Changed
-- ** Check input lon and lat data **
+- **Check input lon and lat data**
   - Made function to check input lon and lat data are valid if not then it should fail quickly.
+- **Upgraded gradle to version 7.6.4**
 ### Deprecated
 ### Removed
 ### Fixed
@@ -31,9 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.11.0]
 
 ### Added
-- **Terraform Fix Upload Images **
+- **Terraform Fix Upload Images**
   - Update deployment 
-- ** Update AWS Provider
+- **Update AWS Provider**
   - Update terraform aws provider to allow for any version greater than 3.0
 ### Changed
 ### Deprecated
