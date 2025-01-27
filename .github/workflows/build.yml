@@ -28,8 +28,17 @@ jobs:
       # gradle
       - name: Checkout project sources
         uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 7.6.4
 
       #########################################################################
       # Versioning (featuring weird gradle output work-arounds)
@@ -219,75 +228,19 @@ jobs:
           VERSION: ${{ env.the_version }}
         run: |
           rm -rf dist
-          ./gradlew --scan buildArtifact
+          ./gradlew buildArtifact
           ./gradlew shadowJar
           mv build/libs/*.jar build/libs/footprint_${VERSION}.jar
-          ls -al
-          ls -al dist/
-          ls -al docker/
-          ls -al build/libs
-          ls -al terraform/
-          ls -al terraform_deploy/
-
 
       #########################################################################
       # Test
       #########################################################################
-      # - name: SonarCloud Scan
-      #   uses: sonarsource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   with:
-      #     args: >
-      #       -Dsonar.organization=${{ github.repository_owner }}
-      #       -Dsonar.projectKey=${{ github.repository_owner }}_l2ss-py
-      #       -Dsonar.python.coverage.reportPaths=build/reports/coverage.xml
-      #       -Dsonar.sources=podaac/
-      #       -Dsonar.tests=tests/
-      #       -Dsonar.projectName=l2ss-py
-      #       -Dsonar.projectVersion=${{ env.software_version }}
-      #       -Dsonar.python.version=3.8,3.9,3.10
 
-      # - name: Java Debugging
-      #   run: |
-      #     java --version
-      #     which java
-      #     ls -al /usr/bin/java
-
-
-      # # This step will fail the build if snyk fails
-      # - name: Run Snyk as a blocking step
-      #   uses: snyk/actions/gradle@master
-      #   env:
-      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #       JAVA_HOME: /usr/lib/jvm/default-java/
-      #   with:
-      #     command: test
-      #     args: >
-      #         --org=${{ secrets.SNYK_ORG_ID }}
-      #         --project-name=${{ github.repository }}
-      #         --severity-threshold=high
-      #         --fail-on=all
-
-      # # This step will send the results of snyk to the snyk servers
-      # - name: Run Snyk on Python
-      #   uses: snyk/actions/python-3.8@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     command: monitor
-      #     args: >
-      #       --org=${{ secrets.SNYK_ORG_ID }}
-      #       --project-name=${{ github.repository }}
-
-      # Lastly run the tests bundled with the repo
-      # - name: Test and coverage
-      #   run: |
-      #     gradle wrapper --gradle-version 6.3
-      #     ./gradlew test
-      #     ./gradlew mergeJUnitReports
-      #     junit 'build/test-results/test/TESTS-TestSuites.xml'
+      - name: Test and coverage
+        run: |
+          gradle wrapper --gradle-version 7.6.4
+          ./gradlew test
+          ./gradlew mergeJUnitReports
 
       #########################################################################
       # Publish release to releases
