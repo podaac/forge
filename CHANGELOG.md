@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 ### Changed
+- **update check input lon and lat data**
+  - Update check lon lat data function with now scale and offset of lats and lons.
 ### Deprecated
 ### Removed
 ### Fixed
