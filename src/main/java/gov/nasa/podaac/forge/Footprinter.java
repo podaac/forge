@@ -101,36 +101,50 @@ public class Footprinter {
     }
 
     /**
-     * Function to check to see if all the lon and lats in netcdf file are all invalid.
-     *
-     * @return Boolean, true if all lon lat are not valid, false if there are some valid lon lats
-     */
-    public static boolean areAllLonLatInvalid(float[] lonVar, float[] latVar) {
-        if (lonVar == null || latVar == null) {
-            throw new IllegalArgumentException("Longitude or Latitude array cannot be null.");
-        }
+    * Checks whether the given latitude and longitude variables contain at least one valid coordinate pair.
+    *
+    * <p>The method reads the values from the provided latitude and longitude variables, applies
+    * scale and offset corrections from the corresponding attribute maps, and verifies if at least
+    * one coordinate pair falls within the valid geographic bounds.</p>
+    *
+    * @param latVariable  The latitude variable containing raw latitude values.
+    * @param lonVariable  The longitude variable containing raw longitude values.
+    * @param latAttMap    A map containing the scale and offset attributes for latitude correction.
+    * @param lonAttMap    A map containing the scale and offset attributes for longitude correction.
+    * @param is360        A flag indicating whether the longitude range is [0, 360] (true) or [-180, 180] (false).
+    * @return             {@code true} if at least one valid coordinate pair is found, otherwise {@code false}.
+    * @throws IOException If reading from the variables fails.
+    */
+    public boolean hasValidCoordinatePair(Variable latVariable, Variable lonVariable, 
+                                        Map<String, Double> latAttMap, Map<String, Double> lonAttMap,
+                                        boolean is360) throws IOException {
+        Array latValues = latVariable.read();
+        Array lonValues = lonVariable.read();
+        
+        // Constants for validation
+        final double MIN_LAT = -90.0;
+        final double MAX_LAT = 90.0;
+        final double MIN_LON = is360 ? 0.0 : -180.0;
+        final double MAX_LON = is360 ? 360.0 : 180.0;
+        final String SCALE = "scale";
+        final String OFFSET = "offset";
+        
+        int size = (int) Math.min(latValues.getSize(), lonValues.getSize());
+        
+        for (int i = 0; i < size; i++) {
+            // Apply scale and offset to raw values
+            double lat = latValues.getDouble(i) * latAttMap.get(SCALE) + latAttMap.get(OFFSET);
+            double lon = lonValues.getDouble(i) * lonAttMap.get(SCALE) + lonAttMap.get(OFFSET);
 
-        // Define the validity ranges for longitude and latitude
-        boolean allInvalidLon = true;
-        for (float lon : lonVar) {
-            // Check if longitude is valid
-            if (!Float.isNaN(lon) && lon >= -180 && lon <= 180) {
-                allInvalidLon = false;
-                break;
+            // Check if both values are within valid ranges and not NaN
+            if (!Double.isNaN(lat) && !Double.isNaN(lon) &&
+                lat >= MIN_LAT && lat <= MAX_LAT &&
+                lon >= MIN_LON && lon <= MAX_LON) {
+                return true;  // Found at least one valid pair
             }
         }
-
-        boolean allInvalidLat = true;
-        for (float lat : latVar) {
-            // Check if latitude is valid
-            if (!Float.isNaN(lat) && lat >= -90 && lat <= 90) {
-                allInvalidLat = false;
-                break;
-            }
-        }
-
-        // Return true only if both longitude and latitude are entirely invalid
-        return allInvalidLon && allInvalidLat;
+        
+        return false;
     }
 
     /**
@@ -187,11 +201,9 @@ public class Footprinter {
             Map<String, Double> lonAttMap = getAttributes(lonVariable);
             int[] shapes = latVariable.getShape();
 
-            float[] lonValues = (float[]) lonVariable.read().copyTo1DJavaArray();
-            float[] latValues = (float[]) latVariable.read().copyTo1DJavaArray();
-            boolean isInvalidLonLat = areAllLonLatInvalid(lonValues, latValues);
-            
-            if(isInvalidLonLat){
+            boolean isValidLonLat = hasValidCoordinatePair(latVariable, lonVariable, latAttMap, latAttMap, is360);
+
+            if(!isValidLonLat){
                 throw new FootprintException("The granule trying to footprint doesn't have any valid longitude and latitude data.");
             }
 
