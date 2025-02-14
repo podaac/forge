@@ -30,6 +30,100 @@ public class FootprintStrategyPolarSmap extends FootprintStrategyPeriodic {
      *
      * @throws IOException If the NetCDF Lat/Lon variables cannot be read
      */
+
+    public void calculateFootprint(Variable lonVariable, Variable latVariable,
+                               Map<String, Double> latAttMap, Map<String, Double> lonAttMap,
+                               List<Coordinate> side1, List<Coordinate> side2,
+                               List<Coordinate> top, List<Coordinate> bottom,
+                               boolean is360, boolean findValid, boolean removeOrigin) throws IOException {
+        
+        Array latData = latVariable.read();
+        Array lonData = lonVariable.read();
+        
+        // Convert arrays and get dimensions
+        ArrayDimensionHelper.ArrayData latArrayData = ArrayDimensionHelper.convertToWorkingArray(latData, latAttMap.get("fill"));
+        ArrayDimensionHelper.ArrayData lonArrayData = ArrayDimensionHelper.convertToWorkingArray(lonData, lonAttMap.get("fill"));
+        
+        float[][] latDataValuesFlat = latArrayData.data2D;
+        float[][] lonDataValuesFlat = lonArrayData.data2D;
+        
+        // If the data is 3D, process it to get valid values
+        if (latArrayData.is3D) {
+            float[][][] latDataValues = (float[][][]) latData.copyToNDJavaArray();
+            float[][][] lonDataValues = (float[][][]) lonData.copyToNDJavaArray();
+            
+            // Create a 2D array from the 3D array to make a more complete footprint
+            for(int x = 0; x < latArrayData.size_x; x++) {
+                for(int y = 0; y < latArrayData.size_y; y++) {
+                    latDataValuesFlat[x][y] = latAttMap.get("fill").floatValue();
+                    lonDataValuesFlat[x][y] = lonAttMap.get("fill").floatValue();
+                    for(int z = 0; z < latArrayData.size_z; z++) {
+                        float latValue = latDataValues[x][y][z];
+                        float lonValue = lonDataValues[x][y][z];
+                        if (latValue != latAttMap.get("fill") && lonValue != lonAttMap.get("fill")) {
+                            latDataValuesFlat[x][y] = latValue;
+                            lonDataValuesFlat[x][y] = lonValue;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Process the 2D arrays to find footprint
+        int bottomIndexPrev = -1;
+        int topIndexPrev = -1;
+        for (int col = 0; col < latDataValuesFlat[0].length; col++) {
+            int topIndex = -1;
+            int bottomIndex = -1;
+            
+            for (int row = 0; row < latDataValuesFlat.length; row++) {
+                float latValue = latDataValuesFlat[row][col];
+                float lonValue = lonDataValuesFlat[row][col];
+
+                // Find the first valid value for bottom coordinates
+                if (latValue != latAttMap.get("fill") && lonValue != lonAttMap.get("fill") && bottomIndex == -1) {
+                    bottomIndex = row;
+                    addLonLat2List(bottom, latValue, lonValue, latAttMap, lonAttMap, is360, removeOrigin);
+                }
+                
+                int reverseRow = latDataValuesFlat.length - row - 1;
+                latValue = latDataValuesFlat[reverseRow][col];
+                lonValue = lonDataValuesFlat[reverseRow][col];
+                
+                // Find the last valid value for top coordinates
+                if (latValue != latAttMap.get("fill") && lonValue != lonAttMap.get("fill") && topIndex == -1) {
+                    topIndex = reverseRow;
+                    addLonLat2List(top, latValue, lonValue, latAttMap, lonAttMap, is360, removeOrigin);
+                }
+            }
+            
+            if (bottomIndex != -1 && topIndex != -1) {
+                if (topIndexPrev == -1) {
+                    topIndexPrev = topIndex;
+                    bottomIndexPrev = bottomIndex;
+                    // Add side1 coordinates
+                    for (int k = bottomIndex; k < topIndex + 1; k++) {
+                        addLonLat2List(side1, latDataValuesFlat[k][col], lonDataValuesFlat[k][col], 
+                                     latAttMap, lonAttMap, is360, removeOrigin);
+                    }
+                } else {
+                    topIndexPrev = topIndex;
+                    bottomIndexPrev = bottomIndex;
+                }
+            } else if (bottomIndex == -1 && bottomIndexPrev > -1) {
+                // Add side2 coordinates
+                for (int k = bottomIndexPrev; k < topIndexPrev + 1; k++) {
+                    addLonLat2List(side2, latDataValuesFlat[k][col - 1], lonDataValuesFlat[k][col - 1],
+                                 latAttMap, lonAttMap, is360, removeOrigin);
+                    bottomIndexPrev = -1;
+                }
+            }
+        }
+    }
+
+
+    /*
     public void calculateFootprint(Variable lonVariable, Variable latVariable,
                                    Map<String, Double> latAttMap, Map<String, Double> lonAttMap,
                                    List<Coordinate> side1, List<Coordinate> side2,
@@ -120,6 +214,7 @@ public class FootprintStrategyPolarSmap extends FootprintStrategyPeriodic {
             }
         }
     }
+    */
     
     /**
      * Apply lat and lon value to coordinate list, apply scale+offset, and
