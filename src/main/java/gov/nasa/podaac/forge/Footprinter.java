@@ -16,7 +16,6 @@ import ucar.ma2.Range;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
-import ucar.ma2.IndexIterator;
 
 import java.io.*;
 import java.util.ArrayList;
