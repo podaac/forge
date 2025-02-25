@@ -16,6 +16,7 @@ import ucar.ma2.Range;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
+import ucar.ma2.IndexIterator;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -100,6 +101,16 @@ public class Footprinter {
         return ranges;
     }
 
+    // Helper method to determine if longitude values are in 360-degree format
+    private boolean isLongitude360(double[] lonValues) {
+        for (double lon : lonValues) {
+            if (!Double.isNaN(lon) && lon > 180.0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
     * Checks whether the given latitude and longitude variables contain at least one valid coordinate pair.
     *
@@ -116,27 +127,39 @@ public class Footprinter {
     * @throws IOException If reading from the variables fails.
     */
     public boolean hasValidCoordinatePair(Variable latVariable, Variable lonVariable, 
-                                        Map<String, Double> latAttMap, Map<String, Double> lonAttMap,
-                                        boolean is360) throws IOException {
+                                        Map<String, Double> latAttMap, Map<String, Double> lonAttMap) throws IOException {
         Array latValues = latVariable.read();
         Array lonValues = lonVariable.read();
+        
+        final String SCALE = "scale";
+        final String OFFSET = "offset";
+        
+        int size = (int) Math.min(latValues.getSize(), lonValues.getSize());
+        
+        // Create arrays to store transformed values
+        double[] transformedLats = new double[size];
+        double[] transformedLons = new double[size];
+        
+        // First pass: Apply scale and offset to all values
+        for (int i = 0; i < size; i++) {
+            transformedLats[i] = latValues.getDouble(i) * latAttMap.get(SCALE) + latAttMap.get(OFFSET);
+            transformedLons[i] = lonValues.getDouble(i) * lonAttMap.get(SCALE) + lonAttMap.get(OFFSET);
+        }
+        
+        // Determine if longitude is 360 based on transformed values
+        boolean is360 = isLongitude360(transformedLons);
         
         // Constants for validation
         final double MIN_LAT = -90.0;
         final double MAX_LAT = 90.0;
         final double MIN_LON = is360 ? 0.0 : -180.0;
         final double MAX_LON = is360 ? 360.0 : 180.0;
-        final String SCALE = "scale";
-        final String OFFSET = "offset";
         
-        int size = (int) Math.min(latValues.getSize(), lonValues.getSize());
-        
+        // Second pass: Check for valid pairs using transformed values
         for (int i = 0; i < size; i++) {
-            // Apply scale and offset to raw values
-            double lat = latValues.getDouble(i) * latAttMap.get(SCALE) + latAttMap.get(OFFSET);
-            double lon = lonValues.getDouble(i) * lonAttMap.get(SCALE) + lonAttMap.get(OFFSET);
-
-            // Check if both values are within valid ranges and not NaN
+            double lat = transformedLats[i];
+            double lon = transformedLons[i];
+            
             if (!Double.isNaN(lat) && !Double.isNaN(lon) &&
                 lat >= MIN_LAT && lat <= MAX_LAT &&
                 lon >= MIN_LON && lon <= MAX_LON) {
@@ -201,7 +224,7 @@ public class Footprinter {
             Map<String, Double> lonAttMap = getAttributes(lonVariable);
             int[] shapes = latVariable.getShape();
 
-            boolean isValidLonLat = hasValidCoordinatePair(latVariable, lonVariable, latAttMap, latAttMap, is360);
+            boolean isValidLonLat = hasValidCoordinatePair(latVariable, lonVariable, latAttMap, latAttMap);
 
             if(!isValidLonLat){
                 throw new FootprintException("The granule trying to footprint doesn't have any valid longitude and latitude data.");
@@ -289,7 +312,7 @@ public class Footprinter {
 
         boolean is360 = datasetConfig.isIs360();
         boolean removeOrigin = datasetConfig.getFootprint().isRemoveOrigin();
-        
+
         List<Coordinate> lonLats = new ArrayList<>();
         for (int i = 0; i < latData.getSize(); i++) {
             if (latData.getDouble(i) == latAttMap.get(FILL) || lonData.getDouble(i) == lonAttMap.get(FILL)) {
