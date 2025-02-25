@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **update check input lon and lat data**
   - Update check lon lat data function with now scale and offset of lats and lons.
-  = Add checking if data is 360 when testing empty granule files
+  - Add checking if data is 360 when testing empty granule files
 ### Deprecated
 ### Removed
 ### Fixed
