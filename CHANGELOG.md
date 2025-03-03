@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.12.1]
+
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+- **Updated check input lon and lat data**
+  - Update check lon lat data function to use scale and offset
+### Security
+
+
 ## [0.12.0]
 
 ### Added
