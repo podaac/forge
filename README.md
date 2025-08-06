@@ -80,6 +80,24 @@ lambda.  build.sh is a temporary solution to build forge module (lambda code and
 
 ## How to load and use forge module
     Project using forge can include/use the forge as following:
+
+### Role Mapping for S3 Downloads
+
+Forge supports role assumption for S3 downloads when accessing buckets that require different credentials than the default Lambda/ECS execution role. See [ROLE_MAPPING.md](ROLE_MAPPING.md) for detailed documentation.
+
+To enable role assumption, add a `role_mapping` object to your configuration. The mapping uses regex patterns to match bucket names:
+
+```json
+{
+  "config": {
+    "role_mapping": {
+      "exact-bucket-name": "arn:aws:iam::123456789012:role/role-for-exact-bucket",
+      ".*-protected": "arn:aws:iam::123456789012:role/protected-data-role",
+      ".*-private": "arn:aws:iam::123456789012:role/private-data-role"
+    }
+  }
+}
+```
 ```shell script
     module "forge_module" {
     // Required parameters

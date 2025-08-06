@@ -8,6 +8,13 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
+import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.amazonaws.services.securitytoken.model.Credentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.BasicSessionCredentials;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
@@ -142,7 +149,7 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
 
                 AdapterLogger.LogInfo(this.className + " trying to get granule file from bucket: " + sourceBucket +
                         " key: " + key + "to workingDir: " + workingDir + " as filename: " + granuleFileName);
-                granuleFileAbsolutePath = getGranuleFile(sourceBucket, key, workingDir, granuleFileName);
+                granuleFileAbsolutePath = getGranuleFile(sourceBucket, key, workingDir, granuleFileName, config);
                 break;
             }
         }
@@ -169,7 +176,7 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
         }
         else if(datasetConfigBucketName != null && datasetConfigDirectory != null){
             datasetConfigFileAbsolutePath = getDatasetConfigFile(datasetConfigBucketName, datasetConfigDirectory,
-                                                                 workingDir, collectionName);
+                                                                 workingDir, collectionName, config);
         }
         else{
             Exception r = new NullPointerException("Configuration env is null");
@@ -246,6 +253,47 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
 
     public String getDatasetConfigURL(){
         return System.getenv("CONFIG_URL");
+    }
+
+    /**
+     * Assume a role if role mapping is provided in the config
+     *
+     * @param config the configuration object containing role_mapping
+     * @param bucket the bucket name to check for role mapping
+     * @return AWS credentials for the assumed role, or null if no role assumption needed
+     */
+    private Credentials assumeRoleIfNeeded(JsonObject config, String bucket) {
+        try {
+            // Check if role_mapping exists in config
+            if (config.has("role_mapping")) {
+                JsonObject roleMapping = config.getAsJsonObject("role_mapping");
+                
+                // Iterate through role mappings to find matching regex pattern
+                for (Map.Entry<String, JsonElement> entry : roleMapping.entrySet()) {
+                    String bucketRegex = entry.getKey();
+                    String roleArn = entry.getValue().getAsString();
+                    
+                    // Check if bucket matches the regex pattern
+                    if (bucket.matches(bucketRegex)) {
+                        AdapterLogger.LogInfo(this.className + " Bucket '" + bucket + "' matches pattern '" + bucketRegex + "', assuming role: " + roleArn);
+                        
+                        AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard()
+                                .withRegion(region)
+                                .build();
+                        
+                        AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
+                                .withRoleArn(roleArn)
+                                .withRoleSessionName("forge-session-" + System.currentTimeMillis());
+                        
+                        AssumeRoleResult assumeRoleResult = stsClient.assumeRole(assumeRoleRequest);
+                        return assumeRoleResult.getCredentials();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            AdapterLogger.LogError(this.className + " Error assuming role for bucket " + bucket + ": " + e.getMessage());
+        }
+        return null;
     }
 
     private JsonObject createFootprintFileJsonObj(long fileSize, String collectionName, String granuleId, String executionName) {
@@ -334,7 +382,21 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
      * @return The absolute path of the downloaded granule file
      */
     public String getGranuleFile(String sourceBucket, String key, String workDir, String granuleName) {
-        String fileNameWithAbsolutePath = download(sourceBucket, key, Paths.get(workDir, granuleName).toString());
+        return getGranuleFile(sourceBucket, key, workDir, granuleName, null);
+    }
+
+    /**
+     * Download granule file from S3 with optional role assumption.
+     *
+     * @param sourceBucket the bucket to retrieve the granule from
+     * @param key          the key to the granule file
+     * @param workDir      the local directory to store the granule file
+     * @param granuleName  the name of the granule file to download
+     * @param config       the configuration object containing role_mapping
+     * @return The absolute path of the downloaded granule file
+     */
+    public String getGranuleFile(String sourceBucket, String key, String workDir, String granuleName, JsonObject config) {
+        String fileNameWithAbsolutePath = download(sourceBucket, key, Paths.get(workDir, granuleName).toString(), config);
         AdapterLogger.LogInfo("Successfully downloaded granule file : " + fileNameWithAbsolutePath);
         return fileNameWithAbsolutePath;
     }
@@ -350,9 +412,24 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
      */
     public String getDatasetConfigFile(String datasetConfigBucketName, String datasetConfigKey, String workDir,
                                        String collectionName) {
+        return getDatasetConfigFile(datasetConfigBucketName, datasetConfigKey, workDir, collectionName, null);
+    }
+
+    /**
+     * Download dataset config file from S3 with optional role assumption.
+     *
+     * @param datasetConfigBucketName the bucket to retrieve the dataset config file from
+     * @param datasetConfigKey        the key to the dataset config file
+     * @param workDir                 The local directory to store the dataset config file
+     * @param collectionName          The name of this collection, which is the name of the dataset config file.
+     * @param config                  the configuration object containing role_mapping
+     * @return The absolute path of the downloaded dataset config file.
+     */
+    public String getDatasetConfigFile(String datasetConfigBucketName, String datasetConfigKey, String workDir,
+                                       String collectionName, JsonObject config) {
         String fileNameWithAbsolutePath = this.download(datasetConfigBucketName,
                 Paths.get(datasetConfigKey, collectionName + ".cfg").toString(),
-                Paths.get(workDir, collectionName + ".cfg").toString());
+                Paths.get(workDir, collectionName + ".cfg").toString(), config);
         AdapterLogger.LogInfo("Successfully downloaded dataset config file : " + fileNameWithAbsolutePath);
         return fileNameWithAbsolutePath;
     }
@@ -403,13 +480,43 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
      * @return the absolute path of the downloaded file
      */
     public String download(String bucket, String key, String outputFileAbsolutePath) {
+        return download(bucket, key, outputFileAbsolutePath, null);
+    }
+
+    /**
+     * Download a file from S3 with optional role assumption
+     *
+     * @param bucket                 the bucket the file is located in
+     * @param key                    the key of the file
+     * @param outputFileAbsolutePath the absolute path of where to download this S3 file to
+     * @param config                 the configuration object containing role_mapping
+     * @return the absolute path of the downloaded file
+     */
+    public String download(String bucket, String key, String outputFileAbsolutePath, JsonObject config) {
         AdapterLogger.LogInfo(this.className + " Downloading from bucket: " + bucket + " key: " + key
                 + " outputFileAbsolutePath: " + outputFileAbsolutePath);
-        //TODO:  Of course we need to integration test this.
-        // Also, a discussion about passing region value in our just hardcode here.
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                .withRegion(region)
-                .build();
+        
+        // Assume role if needed
+        Credentials credentials = null;
+        if (config != null) {
+            credentials = assumeRoleIfNeeded(config, bucket);
+        }
+        
+        // Build S3 client with or without assumed role credentials
+        AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
+                .withRegion(region);
+        
+        if (credentials != null) {
+            s3ClientBuilder.withCredentials(new com.amazonaws.auth.AWSStaticCredentialsProvider(
+                    new com.amazonaws.auth.BasicSessionCredentials(
+                            credentials.getAccessKeyId(),
+                            credentials.getSecretAccessKey(),
+                            credentials.getSessionToken()
+                    )
+            ));
+        }
+        
+        AmazonS3 s3Client = s3ClientBuilder.build();
         
         File file = new File(outputFileAbsolutePath);
         if (!StringUtils.isBlank(bucket) && !StringUtils.isBlank(key)) {
