@@ -4,12 +4,12 @@ The Forge application now supports role assumption for S3 downloads when accessi
 
 ## Configuration
 
-To enable role assumption for specific buckets, add a `role_mapping` object to your configuration. The mapping uses regex patterns to match bucket names:
+To enable role assumption for specific buckets, add a `role_mappings` object to your configuration. The mapping uses regex patterns to match bucket names:
 
 ```json
 {
   "config": {
-    "role_mapping": {
+    "role_mappings": {
       "exact-bucket-name": "arn:aws:iam::123456789012:role/role-for-exact-bucket",
       ".*-protected": "arn:aws:iam::123456789012:role/protected-data-role",
       ".*-private": "arn:aws:iam::123456789012:role/private-data-role",
@@ -21,7 +21,7 @@ To enable role assumption for specific buckets, add a `role_mapping` object to y
 
 ## How it works
 
-1. When downloading files from S3, the application checks if the bucket name matches any regex pattern in the `role_mapping` configuration
+1. When downloading files from S3, the application checks if the bucket name matches any regex pattern in the `role_mappings` configuration
 2. If a matching pattern is found, the application assumes the corresponding role using AWS STS (Security Token Service)
 3. The S3 client is then created with the assumed role credentials
 4. If no matching pattern is found for the bucket, the default credentials are used
@@ -47,7 +47,7 @@ To enable role assumption for specific buckets, add a `role_mapping` object to y
     ]
   },
   "config": {
-    "role_mapping": {
+    "role_mappings": {
       ".*-protected": "arn:aws:iam::123456789012:role/protected-data-access-role",
       "exact-bucket-name": "arn:aws:iam::123456789012:role/exact-bucket-role"
     },

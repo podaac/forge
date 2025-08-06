@@ -45,7 +45,7 @@
         "name": "podaac-dev-cumulus-public"
       }
     },
-    "role_mapping": {
+    "role_mappings": {
       "podaac-dev-cumulus-test-input": "arn:aws:iam::123456789012:role/test-role",
       "podaac-dev-cumulus-internal": "arn:aws:iam::123456789012:role/config-role",
       ".*-protected": "arn:aws:iam::123456789012:role/protected-data-role",

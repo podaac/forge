@@ -258,15 +258,15 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
     /**
      * Assume a role if role mapping is provided in the config
      *
-     * @param config the configuration object containing role_mapping
+     * @param config the configuration object containing role_mappings
      * @param bucket the bucket name to check for role mapping
      * @return AWS credentials for the assumed role, or null if no role assumption needed
      */
     private Credentials assumeRoleIfNeeded(JsonObject config, String bucket) {
         try {
             // Check if role_mapping exists in config
-            if (config.has("role_mapping")) {
-                JsonObject roleMapping = config.getAsJsonObject("role_mapping");
+            if (config.has("role_mappings")) {
+                JsonObject roleMapping = config.getAsJsonObject("role_mappings");
                 
                 // Iterate through role mappings to find matching regex pattern
                 for (Map.Entry<String, JsonElement> entry : roleMapping.entrySet()) {
@@ -422,7 +422,7 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
      * @param datasetConfigKey        the key to the dataset config file
      * @param workDir                 The local directory to store the dataset config file
      * @param collectionName          The name of this collection, which is the name of the dataset config file.
-     * @param config                  the configuration object containing role_mapping
+     * @param config                  the configuration object containing role_mappings
      * @return The absolute path of the downloaded dataset config file.
      */
     public String getDatasetConfigFile(String datasetConfigBucketName, String datasetConfigKey, String workDir,
@@ -489,7 +489,7 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
      * @param bucket                 the bucket the file is located in
      * @param key                    the key of the file
      * @param outputFileAbsolutePath the absolute path of where to download this S3 file to
-     * @param config                 the configuration object containing role_mapping
+     * @param config                 the configuration object containing role_mappings
      * @return the absolute path of the downloaded file
      */
     public String download(String bucket, String key, String outputFileAbsolutePath, JsonObject config) {

@@ -327,7 +327,7 @@ public class FootprintHandlerTest {
         JsonObject config = new JsonObject();
         JsonObject roleMapping = new JsonObject();
         roleMapping.addProperty("test-bucket", "arn:aws:iam::123456789012:role/test-role");
-        config.add("role_mapping", roleMapping);
+        config.add("role_mappings", roleMapping);
         
         // Mock STS client to avoid actual AWS calls
         AWSSecurityTokenService stsClient = Mockito.mock(AWSSecurityTokenService.class);
@@ -360,7 +360,7 @@ public class FootprintHandlerTest {
         roleMapping.addProperty(".*-protected", "arn:aws:iam::123456789012:role/protected-role");
         roleMapping.addProperty(".*-private", "arn:aws:iam::123456789012:role/private-role");
         roleMapping.addProperty("exact-bucket", "arn:aws:iam::123456789012:role/exact-role");
-        config.add("role_mapping", roleMapping);
+        config.add("role_mappings", roleMapping);
         
         // Test that buckets match regex patterns
         assertTrue("my-bucket-protected".matches(".*-protected"));
@@ -388,7 +388,7 @@ public class FootprintHandlerTest {
         JsonObject roleMapping = new JsonObject();
         roleMapping.addProperty(".*-protected", "arn:aws:iam::123456789012:role/protected-role");
         roleMapping.addProperty(".*-private", "arn:aws:iam::123456789012:role/private-role");
-        config.add("role_mapping", roleMapping);
+        config.add("role_mappings", roleMapping);
         
         // Test download with protected bucket (should match regex)
         String result1 = spyFootprintHandler.download("my-bucket-protected", "key1", "/tmp/output1", config);
