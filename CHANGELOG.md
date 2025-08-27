@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.13.0]
 
 ### Added
+- **Requester Pay**
+  - Added in requester pay to aws s3 calls
 ### Changed
 ### Deprecated
 ### Removed
