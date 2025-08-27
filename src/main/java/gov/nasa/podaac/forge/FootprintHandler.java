@@ -413,8 +413,10 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
         
         File file = new File(outputFileAbsolutePath);
         if (!StringUtils.isBlank(bucket) && !StringUtils.isBlank(key)) {
-            s3Client.getObject(new GetObjectRequest(
-                    bucket, key), file);
+            GetObjectRequest getObjectRequest = new GetObjectRequest(bucket, key);
+            // Enable Requester Pays for S3 downloads
+            getObjectRequest.withRequesterPays(true);
+            s3Client.getObject(getObjectRequest, file);
             return file.getAbsolutePath();
         } else {
             return "";
@@ -437,7 +439,10 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
         String path = bucket + "/" + key;
         try {
             AdapterLogger.LogInfo(this.className + " Uploading an object: " + path);
-            s3Client.putObject(new PutObjectRequest(bucket, key, file));
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, file);
+            // Enable Requester Pays for S3 uploads
+            putObjectRequest.withRequesterPays(true);
+            s3Client.putObject(putObjectRequest);
             AdapterLogger.LogInfo(this.className + " Finished uploading an object: " + path);
         } catch (AmazonServiceException ase) {
             AdapterLogger.LogError(this.className + " Caught an AmazonServiceException, which " +
