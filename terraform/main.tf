@@ -10,7 +10,7 @@ locals {
 terraform {
   required_providers {
     aws  = ">= 3.0"
-    null = "~> 2.1"
+    null = "~> 3.2"
   }
 }
 
