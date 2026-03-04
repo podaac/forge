@@ -1,4 +1,4 @@
-FROM amazoncorretto:11
+FROM amazoncorretto:21
 
 RUN yum -y update
 RUN yum install -y wget
