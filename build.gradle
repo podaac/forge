@@ -72,9 +72,10 @@ dependencies {
     implementation group: 'edu.ucar', name: 'cdm-core', version: '5.7.0'
     implementation group: 'org.geotools', name: 'gt-shapefile', version: '34.0'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.25.3'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.25.3'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.25.3'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.25.4'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.25.4'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.25.4'
+    
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
     implementation group: "com.github.everit-org.json-schema", name: "org.everit.json.schema", version: "1.14.4"
     implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.4.0'
