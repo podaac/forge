@@ -12,12 +12,12 @@ WORKDIR /home/dockeruser
 COPY . /home/dockeruser
 
 # Download and install Gradle
-RUN wget https://services.gradle.org/distributions/gradle-8.4-bin.zip && \
-    unzip gradle-8.4-bin.zip && \
-    rm gradle-8.4-bin.zip
+RUN wget https://services.gradle.org/distributions/gradle-8.8-bin.zip && \
+    unzip gradle-8.8-bin.zip && \
+    rm gradle-8.8-bin.zip
 
 # Add Gradle binaries to the PATH
-ENV PATH="/home/dockeruser/gradle-8.4/bin:${PATH}"
+ENV PATH="/home/dockeruser/gradle-8.8/bin:${PATH}"
 
 # Display Gradle version to verify the installation
 RUN gradle --version
