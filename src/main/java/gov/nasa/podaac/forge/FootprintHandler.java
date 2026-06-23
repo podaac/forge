@@ -250,10 +250,11 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
     }
 
     public String getFootprintOutputBucket() {
-        return System.getenv("FOOTPRINT_OUTPUT_BUCKET");
+        return System.getenv().getOrDefault("FOOTPRINT_OUTPUT_BUCKET", "");
     }
+
     public String getFootprintOutputDir() {
-        return System.getenv("FOOTPRINT_OUTPUT_DIR");
+        return System.getenv().getOrDefault("FOOTPRINT_OUTPUT_DIR", "");
     }
 
     private JsonObject createFootprintFileJsonObj(long fileSize, String collectionName, String granuleId, String executionName) {
