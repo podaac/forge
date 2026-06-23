@@ -1,4 +1,6 @@
-name: Add to Project
+# used to triage new issues and PRs on project board, so not to miss external feedback or contributions of users.
+name: Add to PODAAC Project
+
 
 on:
   issues:
