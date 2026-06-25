@@ -1,9 +1,20 @@
-FROM amazoncorretto:21
+FROM amazoncorretto:21-al2023
 
 RUN yum -y update
 RUN yum install -y wget
 RUN yum install -y unzip
 RUN yum install -y /usr/sbin/adduser
+
+# AL2023 uses dnf
+RUN dnf -y update \
+ && dnf -y install wget unzip shadow-utils tar gzip python3.12 \
+ && dnf clean all
+
+ RUN dnf install -y findutils && dnf clean all
+
+# Make python3 resolve to Python 3.12 for shell/runtime use
+# (do not remove system python packages)
+RUN ln -sf /usr/bin/python3.12 /usr/local/bin/python3
 
 RUN groupadd dockergroup
 RUN useradd -m -g dockergroup dockeruser
