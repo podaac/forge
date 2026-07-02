@@ -1,10 +1,5 @@
 FROM amazoncorretto:21-al2023
 
-RUN yum -y update
-RUN yum install -y wget
-RUN yum install -y unzip
-RUN yum install -y /usr/sbin/adduser
-
 # AL2023 uses dnf
 RUN dnf -y update \
  && dnf -y install wget unzip shadow-utils tar gzip python3.12 \
