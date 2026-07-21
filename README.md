@@ -47,7 +47,7 @@ Build local jar to run footprint
 ./gradlew shadowJar
 ```
 
-You need java 11 to run the jar locally
+You need java 21 to run the jar locally
 ```
 java -cp build/libs/footprint.jar FootprintCLI <granule> <collection config>
 ```

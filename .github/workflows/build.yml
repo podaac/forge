@@ -27,18 +27,18 @@ jobs:
       # Checks out this repository and sets up the build/test environment with 
       # gradle
       - name: Checkout project sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '21'
           
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v5
         with:
-          gradle-version: 7.6.4
+          gradle-version: 8.8
 
       #########################################################################
       # Versioning (featuring weird gradle output work-arounds)
@@ -238,7 +238,7 @@ jobs:
 
       - name: Test and coverage
         run: |
-          gradle wrapper --gradle-version 7.6.4
+          #gradle wrapper --gradle-version 8.8
           ./gradlew test
           ./gradlew mergeJUnitReports
 
@@ -253,7 +253,7 @@ jobs:
           github.event.head_commit.message == '/deploy sit' ||
           github.event.head_commit.message == '/deploy uat' ||
           github.event.head_commit.message == '/deploy sandbox'
-        uses: ncipollo/release-action@v1.12.0
+        uses: ncipollo/release-action@v1.20.0
         with:
           tag: ${{ env.the_version }}
           artifacts: "dist/*.zip, build/libs/*.jar"
@@ -318,7 +318,7 @@ jobs:
           github.event.head_commit.message == '/deploy sit' ||
           github.event.head_commit.message == '/deploy uat' ||
           github.event.head_commit.message == '/deploy sandbox'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/Dockerfile
@@ -330,7 +330,7 @@ jobs:
       #########################################################################
       # Deploy to AWS via Terraform
       #########################################################################
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 0.13.6
 

@@ -50,6 +50,7 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
      *
      * @return The result of the footprint task
      */
+
     public String handleRequest(String input, Context context) {
         MessageParser parser = new MessageParser();
         try {
@@ -248,10 +249,18 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
         return System.getenv("CONFIG_URL");
     }
 
+    public String getFootprintOutputBucket() {
+        return System.getenv().getOrDefault("FOOTPRINT_OUTPUT_BUCKET", "");
+    }
+
+    public String getFootprintOutputDir() {
+        return System.getenv().getOrDefault("FOOTPRINT_OUTPUT_DIR", "");
+    }
+
     private JsonObject createFootprintFileJsonObj(long fileSize, String collectionName, String granuleId, String executionName) {
         JsonObject file = new JsonObject();
-        String bucket = System.getenv().getOrDefault("FOOTPRINT_OUTPUT_BUCKET", "");
-        String out_dir = System.getenv().getOrDefault("FOOTPRINT_OUTPUT_DIR", "");
+        String bucket = getFootprintOutputBucket();
+        String out_dir = getFootprintOutputDir();
         String filepath = Paths.get(out_dir, collectionName, granuleId + "_" + executionName + ".fp").toString();
         file.addProperty("bucket", bucket);
 
@@ -296,8 +305,8 @@ public class FootprintHandler implements ITask, RequestHandler<String, String> {
     private long outputFootprint(String workingDir, String collectionName, String granuleId,
                                        String outJsonString, String executionName) throws IOException{
         try {
-            String footprintBucketName = System.getenv("FOOTPRINT_OUTPUT_BUCKET");
-            String footprintDirectory = System.getenv("FOOTPRINT_OUTPUT_DIR");
+            String footprintBucketName = getFootprintOutputBucket();
+            String footprintDirectory = getFootprintOutputDir();
             // wrote a local working directory
             File f = new File(Paths.get(workingDir, granuleId + ".fp").toString());
             FileUtils.writeStringToFile(f, outJsonString, StandardCharsets.UTF_8.name());
