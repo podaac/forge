@@ -23,17 +23,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.any;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
 public class FootprintHandlerTest {
     static String granuleFilePath;
     static String cfgFilePath;
     static String outputFootprintFilePath;
     static String inputMessageStr;
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
     public void testGetSourceBucketAndKey() {
@@ -47,10 +41,6 @@ public class FootprintHandlerTest {
 
     @Test
     public void testPerformFunctionURL() throws Exception {
-
-        // 1. Initialize the temp folder
-        tempFolder.create();
-
         ClassLoader classLoader = getClass().getClassLoader();
         
         // 1. Handle Inputs (Existing logic)
@@ -61,7 +51,8 @@ public class FootprintHandlerTest {
         File configFile = new File(classLoader.getResource("MODIS_A-JPL-L2P-v2019.0.cfg").getFile());
         
         // 2. FIX: Create a real, writable path for the output instead of a resource
-        File tempOutputFile = tempFolder.newFile("footprint.txt");
+        File tempOutputFile = File.createTempFile("footprint", ".txt");
+        tempOutputFile.deleteOnExit();
         String outputFootprintFilePath = tempOutputFile.getAbsolutePath();
 
         FootprintHandler footprintHandler = new FootprintHandler();
