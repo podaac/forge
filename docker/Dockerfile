@@ -1,35 +1,53 @@
+# ---------------------------------------------------------------------------
+# Stage 1: build. Gradle, its ~/.gradle cache and the source tree stay in this
+# stage and are NOT copied into the runtime image.
+# ---------------------------------------------------------------------------
+FROM amazoncorretto:21-al2023 AS build
+
+RUN dnf -y update \
+ && dnf -y install --setopt=install_weak_deps=False wget unzip tar gzip findutils \
+ && dnf clean all
+
+WORKDIR /build
+COPY . /build
+
+# Gradle comes from the project wrapper (checksum-verified via gradle-wrapper.properties)
+RUN ./gradlew shadowJar --no-daemon
+
+# Cumulus Message Adapter (verify the download before using it)
+ARG CMA_VERSION=v2.0.6
+ARG CMA_SHA256=41a784d0db0293efc1efa366d1cdf4c9855e870d4ab1de8278f46cdfc882b271
+RUN wget -q https://github.com/nasa/cumulus-message-adapter/releases/download/${CMA_VERSION}/cumulus-message-adapter.zip \
+ && echo "${CMA_SHA256}  cumulus-message-adapter.zip" | sha256sum -c - \
+ && mkdir /cumulus-message-adapter \
+ && unzip -q -d /cumulus-message-adapter cumulus-message-adapter.zip
+
+# ---------------------------------------------------------------------------
+# Stage 2: runtime. Only the jar, the CMA and what they need to run.
+# ---------------------------------------------------------------------------
 FROM amazoncorretto:21-al2023
 
 # AL2023 uses dnf
 RUN dnf -y update \
- && dnf -y install wget unzip shadow-utils tar gzip python3.12 \
+ && dnf -y install --setopt=install_weak_deps=False shadow-utils findutils python3.12 \
  && dnf clean all
-
- RUN dnf install -y findutils && dnf clean all
 
 # Make python3 resolve to Python 3.12 for shell/runtime use
 # (do not remove system python packages)
 RUN ln -sf /usr/bin/python3.12 /usr/local/bin/python3
 
-RUN groupadd dockergroup
-RUN useradd -m -g dockergroup dockeruser
+RUN groupadd dockergroup \
+ && useradd -m -g dockergroup dockeruser
 
 WORKDIR /home/dockeruser
-COPY . /home/dockeruser
 
-# Gradle is provided by the project wrapper (./gradlew, Gradle 9.9.0, checksum-verified
-# via gradle-wrapper.properties), so no separate Gradle install is needed.
-
-RUN chown dockeruser:dockergroup -R /home/dockeruser
-
-USER dockeruser
-
-RUN ./gradlew shadowJar
-
-RUN wget https://github.com/nasa/cumulus-message-adapter/releases/download/v2.0.6/cumulus-message-adapter.zip
-RUN mkdir cumulus-message-adapter
-RUN unzip -d cumulus-message-adapter cumulus-message-adapter.zip
+# Keep these paths: terraform/forge_fargate.tf runs
+#   java -jar /home/dockeruser/build/libs/footprint.jar
+COPY --from=build --chown=dockeruser:dockergroup /build/build/libs/footprint.jar /home/dockeruser/build/libs/footprint.jar
+COPY --from=build --chown=dockeruser:dockergroup /cumulus-message-adapter /home/dockeruser/cumulus-message-adapter
 
 ENV CUMULUS_MESSAGE_ADAPTER_DIR=/home/dockeruser/cumulus-message-adapter
+
+USER dockeruser
 
 ENTRYPOINT []
